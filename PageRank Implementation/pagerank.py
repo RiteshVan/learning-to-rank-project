@@ -71,5 +71,5 @@ print()
 
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
-print("Compared to networkx built-in funtion: " )
+print("Compared to networkx built-in function: " )
 print(nx.pagerank(g))
