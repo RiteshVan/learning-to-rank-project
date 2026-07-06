@@ -11,3 +11,7 @@ Learnt about libraries to use for Python PageRank implementation.
 3/7/2026:
 Planned and begun start of report.
 Begun PageRank implementation.
+
+
+5-6/7/2026:
+Completed PageRank implementation.
