@@ -30,39 +30,35 @@ g.add_edge(4,0)
 g.add_edge(0,4)
 
 
-#Visualise graph in circular way for clarity
-#nx.draw_circular(g,with_labels=True)
-#plt.show()
+def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
+
+    #Create matrixes for algorithm
+
+    #Transpose such that (x,y) entry shows if x -> y is connected
+    adj_matrix = np.array(nx.adjacency_matrix(graph,dtype=float).toarray()).transpose()
 
 
-#Create matrixes for algorithm
+    #Create transition matrix based on number of outlinks per node
+    to_divide = np.sum(adj_matrix,axis=0,dtype=float)
 
-#Transpose such that (x,y) entry shows if x -> y is connected
-adj_matrix = np.array(nx.adjacency_matrix(g,dtype=float).toarray()).transpose()
-
-#Create transition matrix based on number of outlinks per node
-to_divide = np.sum(adj_matrix,axis=0,dtype=float)
-
-tr_matrix = np.array(np.divide(adj_matrix,to_divide,dtype=float,out=np.zeros_like(adj_matrix),where=to_divide!=0 ))
-
-#Damping factor
-damping = 0.85
-
-#Final matrix to use after taking damping and random clicks into account
-final_matrix = (np.dot(damping,tr_matrix)) + np.dot((np.full((len(tr_matrix),len(tr_matrix)),(1/len(adj_matrix))  ,dtype=float) ), (1-damping) )
+    tr_matrix = np.array(np.divide(adj_matrix,to_divide,dtype=float,out=np.zeros_like(adj_matrix),where=to_divide!=0 ))
 
 
-#Create matrix for initial PageRank values for nodes
-node_values = np.array([[1/len(adj_matrix)]]*len(adj_matrix))
+    #Final matrix to use after taking damping and random clicks into account
+    final_matrix = (np.dot(damping,tr_matrix)) + np.dot((np.full((len(tr_matrix),len(tr_matrix)),(1/len(adj_matrix))  ,dtype=float) ), (1-damping) )
 
-#Run for 10 iterations to get final PageRank values
+    #Create matrix for initial PageRank values for nodes
+    node_values = np.array([[1/len(adj_matrix)]]*len(adj_matrix))
 
-for i in range(10):
-    node_values = np.dot(final_matrix,node_values)
+    #Run for specified number of iterations to get final PageRank values
+    for i in range(iter):
+        node_values = np.dot(final_matrix,node_values)
+
+    return node_values
 
 #Print results from own implementation
 print("Own implementation: ")
-print(node_values)
+print(pagerank(g,10,0.85))
 
 
 print()
@@ -73,3 +69,12 @@ print()
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
 print(nx.pagerank(g))
+
+
+
+
+
+
+#Visualise graph in circular way for clarity
+#nx.draw_circular(g,with_labels=True)
+#plt.show()
