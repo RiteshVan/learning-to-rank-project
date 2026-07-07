@@ -11,8 +11,9 @@ g = nx.DiGraph()
 
 g.add_edge(0,1)
 g.add_edge(1,1)
-g.add_edge(0,2)
 g.add_edge(2,1)
+g.add_edge(0,2)
+
 
 
 
@@ -29,8 +30,10 @@ g.add_edge(4,0)
 
 g.add_edge(0,4)
 
+print(g.nodes())
 
 def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
+    
 
     #Create matrixes for algorithm
 
@@ -54,7 +57,13 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     for i in range(iter):
         node_values = np.dot(final_matrix,node_values)
 
-    return node_values
+    output=[]
+    for i in range(len(node_values)):
+        
+        output.append((list(graph.nodes)[i],float(node_values[i][0])))
+        
+
+    return output
 
 #Print results from own implementation
 print("Own implementation: ")
