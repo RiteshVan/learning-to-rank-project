@@ -44,8 +44,20 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     #Create transition matrix based on number of outlinks per node
     to_divide = np.sum(adj_matrix,axis=0,dtype=float)
 
-    tr_matrix = np.array(np.divide(adj_matrix,to_divide,dtype=float,out=np.zeros_like(adj_matrix),where=to_divide!=0 ))
+    tr_matrix = np.array(np.divide(adj_matrix,to_divide,dtype=float,out=np.zeros_like(adj_matrix),where=to_divide!=0 )).transpose()
 
+
+    #Modify matrix such that dangling nodes link to all other nodes equally
+
+    for row in tr_matrix:
+        if sum(row)==0:
+            for i in range(len(row)):
+                row[i]=1/len(row)
+
+
+    tr_matrix=tr_matrix.transpose()
+    
+    
 
     #Final matrix to use after taking damping and random clicks into account
     final_matrix = (np.dot(damping,tr_matrix)) + np.dot((np.full((len(tr_matrix),len(tr_matrix)),(1/len(adj_matrix))  ,dtype=float) ), (1-damping) )
