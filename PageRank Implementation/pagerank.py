@@ -56,6 +56,7 @@ array =array[1:]
 for val in array:
     g.add_edge(val[0],val[1])
 
+#Contains main implementation
 def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     
 
