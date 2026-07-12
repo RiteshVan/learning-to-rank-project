@@ -1,36 +1,55 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-
+import re
 
 #Initialise directed graph to visualise connections for PageRank
 g = nx.DiGraph()
 
 #Create connections between nodes
-#Small graph to showcase how PageRank works
 
-g.add_edge(0,1)
-g.add_edge(1,1)
-g.add_edge(2,1)
-g.add_edge(0,2)
+#Used during initial testing, switched to use real dataset
+# #Small graph to showcase how PageRank works
 
-
-
-
-g.add_edge(1,3)
-
-g.add_edge(3,2)
-g.add_edge(3,4)
-g.add_edge(4,1)
-g.add_edge(4,2)
-g.add_edge(4,3)
-
-g.add_edge(4,0)
+# g.add_edge(0,1)
+# g.add_edge(1,1)
+# g.add_edge(2,1)
+# g.add_edge(0,2)
 
 
-g.add_edge(0,4)
 
-print(g.nodes())
+
+# g.add_edge(1,3)
+
+# g.add_edge(3,2)
+# g.add_edge(3,4)
+# g.add_edge(4,1)
+# g.add_edge(4,2)
+# g.add_edge(4,3)
+
+# g.add_edge(4,0)
+
+
+# g.add_edge(0,4)
+
+
+#Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
+file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
+
+array=[]
+
+with open(file,"r") as f:
+    for line in f:
+        x = re.search(r"([0-9]+)\s([0-9]+)",line)
+        if x:
+            array.append((int(x.group(1)),int(x.group(2))))
+
+
+
+array =array[1:]
+
+for val in array:
+    g.add_edge(val[0],val[1])
 
 def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     
@@ -79,7 +98,7 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
 
 #Print results from own implementation
 print("Own implementation: ")
-print(pagerank(g,10,0.85))
+print(pagerank(g,10,0.85)[:10])
 
 
 print()
@@ -89,7 +108,7 @@ print()
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
-print(nx.pagerank(g))
+print(list(nx.pagerank(g).items())[:10])
 
 
 
