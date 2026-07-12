@@ -34,20 +34,25 @@ g = nx.DiGraph()
 
 
 #Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
+#Load in dataset
 file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
 
+#Array used to store node connections as list of tuples
 array=[]
 
+#Add tuples to array
 with open(file,"r") as f:
     for line in f:
+        #Only take into account lines that relate to nodes connections based on URL IDs
         x = re.search(r"([0-9]+)\s([0-9]+)",line)
         if x:
             array.append((int(x.group(1)),int(x.group(2))))
 
 
-
+#First line corresponds to total no. nodes and edges, so must be skipped when creating graph
 array =array[1:]
 
+#Creates graph based on array
 for val in array:
     g.add_edge(val[0],val[1])
 
@@ -100,7 +105,7 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
 print("Own implementation: ")
 print(pagerank(g,10,0.85)[:10])
 
-
+#Extra print lines for clarity and separation
 print()
 print()
 print()
