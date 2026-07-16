@@ -14,4 +14,10 @@ Begun PageRank implementation.
 
 
 5-6/7/2026:
-Completed PageRank implementation.
+Completed basic PageRank implementation.
+
+12/7/2026:
+Updated PageRank code to be able to operate on real dataset
+
+16/7/20226:
+Updated code to be able to check iterations till convergence
