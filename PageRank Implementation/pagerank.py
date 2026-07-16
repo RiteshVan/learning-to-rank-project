@@ -2,6 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+import time
 
 #Initialise directed graph to visualise connections for PageRank
 g = nx.DiGraph()
@@ -35,7 +36,7 @@ g = nx.DiGraph()
 
 #Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
 #Load in dataset
-file = "PLACEHOLDER_PATH"
+file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
 
 #Array used to store node connections as list of tuples
 array=[]
@@ -119,7 +120,9 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
 
 #Print results from own implementation
 print("Own implementation: ")
-print(pagerank(g,1000,0.85)[-20:])
+start = time.time()
+print(pagerank(g,1000,0.85)[:20])
+print("Time taken: ", time.time()-start)
 
 #Extra print lines for clarity and separation
 print()
@@ -129,7 +132,7 @@ print()
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
-print(list(nx.pagerank(g).items())[-20:])
+print(list(nx.pagerank(g).items())[:20])
 
 
 
