@@ -90,21 +90,36 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     #Create matrix for initial PageRank values for nodes
     node_values = np.array([[1/len(adj_matrix)]]*len(adj_matrix))
 
+    
     #Run for specified number of iterations to get final PageRank values
     for i in range(iter):
-        node_values = np.dot(final_matrix,node_values)
+        new_node_values = np.dot(final_matrix,node_values)
+
+        diff= np.absolute(new_node_values-node_values)
+        
+        if all(diff) < 0.0001:
+            
+            node_values=new_node_values
+            break
+
+
+        node_values=new_node_values
+
+    
+    iter_taken=i+1
 
     output=[]
     for i in range(len(node_values)):
         
         output.append((list(graph.nodes)[i],float(node_values[i][0])))
-        
+    
 
+    print("Number of iterations till convergence: ",iter_taken)
     return output
 
 #Print results from own implementation
 print("Own implementation: ")
-print(pagerank(g,10,0.85)[:10])
+print(pagerank(g,1000,0.85)[-20:])
 
 #Extra print lines for clarity and separation
 print()
@@ -114,7 +129,7 @@ print()
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
-print(list(nx.pagerank(g).items())[:10])
+print(list(nx.pagerank(g).items())[-20:])
 
 
 
