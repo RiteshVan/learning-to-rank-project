@@ -98,7 +98,8 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
 
         diff= np.absolute(new_node_values-node_values)
         
-        if all(diff) < 0.0001:
+
+        if np.all(diff < 0.0000000001):
             
             node_values=new_node_values
             break
@@ -118,10 +119,11 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     print("Number of iterations till convergence: ",iter_taken)
     return output
 
+
 #Print results from own implementation
 print("Own implementation: ")
 start = time.time()
-print(pagerank(g,1000,0.85)[:20])
+pagerank(g,1000,0.85)
 print("Time taken: ", time.time()-start)
 
 #Extra print lines for clarity and separation
