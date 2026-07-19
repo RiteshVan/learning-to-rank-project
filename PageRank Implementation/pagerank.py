@@ -58,7 +58,7 @@ for val in array:
     g.add_edge(val[0],val[1])
 
 #Contains main implementation
-def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
+def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,convergence_threshold : float):
     
 
     #Create matrixes for algorithm
@@ -99,7 +99,7 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
         diff= np.absolute(new_node_values-node_values)
         
 
-        if np.all(diff < 0.0000000001):
+        if np.all(diff < convergence_threshold):
             
             node_values=new_node_values
             break
@@ -117,13 +117,13 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float):
     
 
     print("Number of iterations till convergence: ",iter_taken)
-    return output
+    return iter_taken,output
 
 
 #Print results from own implementation
 print("Own implementation: ")
 start = time.time()
-pagerank(g,1000,0.85)
+pagerank(g,100,0.85,0.0001)
 print("Time taken: ", time.time()-start)
 
 #Extra print lines for clarity and separation
@@ -138,6 +138,30 @@ print(list(nx.pagerank(g).items())[:20])
 
 
 
+#Extra print lines for clarity and separation
+print()
+print()
+print()
+
+
+
+
+test_convergence_vals =[0.1,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001,]
+
+
+plot_x=[]
+plot_y=[]
+for val in test_convergence_vals:
+    plot_x.append(val)
+    plot_y.append(pagerank(g,100,0.85,val)[0])
+
+
+plt.plot(plot_x,plot_y)
+plt.xscale("log")
+plt.xlabel("Convergence threshold")
+plt.ylabel("Iterations till convergence")
+plt.title("Iterations till convergence against convergence threshold")
+plt.show()
 
 
 
