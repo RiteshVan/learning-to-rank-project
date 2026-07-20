@@ -116,25 +116,25 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
         output.append((list(graph.nodes)[i],float(node_values[i][0])))
     
 
-    print("Number of iterations till convergence: ",iter_taken)
+    # print("Number of iterations till convergence: ",iter_taken)
+
     return iter_taken,output
 
 
 #Print results from own implementation
 print("Own implementation: ")
-start = time.time()
-pagerank(g,100,0.85,0.0001)
-print("Time taken: ", time.time()-start)
+# start = time.time()
+print(sorted(pagerank(g,100,0.85,0.00001)[1][:20], key= lambda x : x[1],reverse=True ) )
+# print("Time taken: ", time.time()-start)
 
 #Extra print lines for clarity and separation
 print()
-print()
-print()
+
 
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
-print(list(nx.pagerank(g).items())[:20])
+print(sorted(list(nx.pagerank(g).items())[:20], key = lambda x : x[1],reverse=True  ))
 
 
 
