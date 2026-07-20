@@ -21,3 +21,9 @@ Updated PageRank code to be able to operate on real dataset
 
 16/7/20226:
 Updated code to be able to check iterations till convergence
+
+18/7/20226:
+Continued report and created table to display results clearly
+
+20/7/20226:
+Began RankNet implementation and loaded in data in strctured clear way and created pairs to streamline model training process
