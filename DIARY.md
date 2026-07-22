@@ -27,3 +27,7 @@ Continued report and created table to display results clearly
 
 20/7/20226:
 Began RankNet implementation and loaded in data in strctured clear way and created pairs to streamline model training process
+
+
+22/7/2026:
+Worked on report LTR overview section.
