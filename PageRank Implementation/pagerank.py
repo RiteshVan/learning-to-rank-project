@@ -36,7 +36,7 @@ g = nx.DiGraph()
 
 #Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
 #Load in dataset
-file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
+file = "placeholder"
 
 #Array used to store node connections as list of tuples
 array=[]
