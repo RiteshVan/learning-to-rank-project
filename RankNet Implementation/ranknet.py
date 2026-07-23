@@ -92,3 +92,26 @@ for qid,docs in dictionary_query_docs.items():
                     if (docs[j][0],docs[i][0]) not in pairs:
                         pairs.append((docs[j][0],docs[i][0]))
                         
+
+
+#Defines RankNet model
+class RankNet(nn.Module):
+
+    #Initialises layers in the neural network
+    def __init__(self,input_features,hl1,out):
+        super().__init__()
+        self.fc1 ==nn.Linear(input_features,hl1)
+        self.out=nn.Linear(hl1,out)
+
+
+    #Forward pass to compute output from the input
+    def forward(self,x):
+        x = F.relu(self.fc1(x))
+        x= self.out(x)
+
+        return x
+
+
+#Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
+model=RankNet(len(features[0]),30,1)
+
