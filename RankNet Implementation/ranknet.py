@@ -166,6 +166,6 @@ for i in range(epochs):
 
     
 
-
+#Graph to show how loss changes based on iterations
 plt.plot(range(epochs),losses)
 plt.show()
