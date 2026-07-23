@@ -2,9 +2,11 @@ import torch
 import torch.nn as nn
 import re
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 #Path to dataset being used
-dataset_name= "placeholder"
+dataset_name= "/Users/ritesh/Desktop/project-extra/MQ2008/Fold3/train.txt"
 
 
 #To store data entries (which consist of query IDs, features and relevancy labels)
@@ -99,7 +101,7 @@ class RankNet(nn.Module):
     #Initialises layers in the neural network
     def __init__(self,input_features,hl1,out):
         super().__init__()
-        self.fc1 ==nn.Linear(input_features,hl1)
+        self.fc1 =nn.Linear(input_features,hl1)
         self.out=nn.Linear(hl1,out)
 
 
@@ -126,7 +128,7 @@ target = torch.ones(len(pairs),1)
 critierion = nn.BCELoss()
 
 #Used to update weights based on information obtained
-optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
 #How many times to run loop
 epochs=100
@@ -141,7 +143,7 @@ for i in range(epochs):
     output_2 = model.forward(features_2)
 
     #Calculates difference  and its sigmoid value befor inputting into loss function
-    diff = output_1 - output_2 #Must take away more relevant doc from less relevant one
+    diff = output_1 - output_2 
     diff = torch.sigmoid(diff)
 
 
@@ -151,14 +153,19 @@ for i in range(epochs):
     losses.append(loss.detach().numpy())
 
 
+    
+
     #Compute gradients
     loss.backward()
 
     #Weight adjustment from optimiser
     optimiser.step()
 
-
     #Prepare gradients for next loop by resetting current ones
     optimiser.zero_grad()
 
+    
 
+
+plt.plot(range(epochs),losses)
+plt.show()
