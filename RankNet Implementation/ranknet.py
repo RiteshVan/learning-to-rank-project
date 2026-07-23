@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.functional as F
 import re
 import numpy as np
 
@@ -106,7 +105,7 @@ class RankNet(nn.Module):
 
     #Forward pass to compute output from the input
     def forward(self,x):
-        x = F.relu(self.fc1(x))
+        x = torch.relu(self.fc1(x))
         x= self.out(x)
 
         return x
@@ -114,4 +113,52 @@ class RankNet(nn.Module):
 
 #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
 model=RankNet(len(features[0]),30,1)
+
+#Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
+#Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
+features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
+features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
+
+#Targets are equal to one as the more relevant doc is one the left side, so target is one
+target = torch.ones(len(pairs),1)
+
+#Defines loss function used for the model
+critierion = nn.BCELoss()
+
+#Used to update weights based on information obtained
+optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+
+#How many times to run loop
+epochs=100
+
+#Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
+losses=[]
+
+#Train loop
+for i in range(epochs):
+    #Outputs obtained as docs are input into network
+    output_1 = model.forward(features_1)
+    output_2 = model.forward(features_2)
+
+    #Calculates difference  and its sigmoid value befor inputting into loss function
+    diff = output_1 - output_2 #Must take away more relevant doc from less relevant one
+    diff = torch.sigmoid(diff)
+
+
+    #Calculate loss and add to array
+    loss = critierion(diff,target)
+
+    losses.append(loss.detach().numpy())
+
+
+    #Compute gradients
+    loss.backward()
+
+    #Weight adjustment from optimiser
+    optimiser.step()
+
+
+    #Prepare gradients for next loop by resetting current ones
+    optimiser.zero_grad()
+
 
