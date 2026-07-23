@@ -27,10 +27,10 @@ with open(dataset_name,"r") as f:
         i=i+1
 
 
-        #Used to set limit on number of lines read to not overload resources
-        if i>=1000:
-            #Exit loop once enough lines read
-            break
+        # #Used to set limit on number of lines read to not overload resources
+        # if i>=1000:
+        #     #Exit loop once enough lines read
+        #     break
     
 
 #Arrays to store required information about query-doc pairs
