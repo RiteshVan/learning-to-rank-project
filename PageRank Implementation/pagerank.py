@@ -36,7 +36,7 @@ g = nx.DiGraph()
 
 #Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
 #Load in dataset
-file = "placeholder"
+file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
 
 #Array used to store node connections as list of tuples
 array = []
@@ -160,29 +160,51 @@ print()
 test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
 
 
-#arrays to keep track of values to plot
-plot_x=[] #Stores convergence thresholds
-plot_y=[]  #Stores iterations taken at each threshold
+# #arrays to keep track of values to plot
+# plot_x=[] #Stores convergence thresholds
+# plot_y=[]  #Stores iterations taken at each threshold
 
 
-#Iterate through selected thresholds (from prior array) and run pagerank at each threshold (keeping damping the same throughout for fair testing)
-for val in test_convergence_vals:
-    #Add current threshold value to array
-    plot_x.append(val)
+# #Iterate through selected thresholds (from prior array) and run pagerank at each threshold (keeping damping the same throughout for fair testing)
+# for val in test_convergence_vals:
+#     #Add current threshold value to array
+#     plot_x.append(val)
 
-    #Add current pagerank iterations taken count to array
-    plot_y.append(pagerank(g,100,0.85,val)[0])
+#     #Add current pagerank iterations taken count to array
+#     plot_y.append(pagerank(g,100,0.85,val)[0])
 
-#Plot and label graph
-plt.plot(plot_x,plot_y)
-plt.xscale("log")
-plt.xlabel("Convergence threshold")
-plt.ylabel("Iterations till convergence")
-plt.title("Iterations till convergence against convergence threshold")
-plt.show()
+# #Plot and label graph
+# plt.plot(plot_x,plot_y)
+# plt.xscale("log")
+# plt.xlabel("Convergence threshold")
+# plt.ylabel("Iterations till convergence")
+# plt.title("Iterations till convergence against convergence threshold")
+# plt.show()
 
 
 
 #Visualise graph in circular way for clarity
 #nx.draw_circular(g,with_labels=True)
 #plt.show()
+
+
+
+avg_times_taken=[]
+
+for val in test_convergence_vals:
+
+    per_val_times=[]
+    for i in range(20):
+        start= time.time()
+        pagerank(g,100,0.85,val)
+        per_val_times.append(time.time() - start)
+
+
+    avg_times_taken.append(sum(per_val_times)/len(per_val_times))
+        
+
+print(avg_times_taken)
+print(test_convergence_vals)
+plt.xscale("log")
+plt.plot(test_convergence_vals,avg_times_taken)
+plt.show()
