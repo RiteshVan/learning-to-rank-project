@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 
 
 #Path to dataset being used
-dataset_name= "/Users/ritesh/Desktop/project-extra/MQ2008/Fold3/train.txt"
+dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold3/train.txt"
 
 
 #To store data entries (which consist of query IDs, features and relevancy labels)
-array=[]
+array = []
 
 
 #Open file and iterate through and add to array
 with open(dataset_name,"r") as f:
     #Variable to count number of lines read
-    i=0
+    i = 0
 
 
     for line in f:
@@ -34,9 +34,9 @@ with open(dataset_name,"r") as f:
     
 
 #Arrays to store required information about query-doc pairs
-relevancy_labels=[]
-queries=[] #Query IDs stored
-features=[] #Array of arrays, with each entry representing a document
+relevancy_labels = []
+queries = [] #Query IDs stored
+features = [] #Array of arrays, with each entry representing a document
 
 
 for val in array:
@@ -49,7 +49,7 @@ for val in array:
         queries.append(re.search(r"qid:([0-9]+)",val).group(1))
 
         #Find all features in entry and only extracts numerical terms that refer to feature values
-        feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+        feature_vals = re.findall(r"[0-9]+:([^ ]*)" , val) 
 
         #Convert all data extracted here to floats for future operations
         features.append(list( map(float,feature_vals)))
@@ -62,7 +62,7 @@ dictionary_query_docs = {}
 for label,qid,f in zip(relevancy_labels,queries,features):
     #If query not already a key in dictionary, create new entry
     if qid not in dictionary_query_docs:
-        dictionary_query_docs[qid]= [(f,label)]
+        dictionary_query_docs[qid] = [(f,label)]
     
     #If query already present, add tuple to list
     else:
@@ -78,20 +78,20 @@ for qid,docs in dictionary_query_docs.items():
 
     #Iterate through documents
     for i in range(len(docs)):
-        for j in range(i+1,len(docs)):
+        for j in range(i+1, len(docs)):
             #Do not create pair if 2 docs have same pair, as purpose of training to understand when a doc is more relevant than another
-            if docs[i][1] !=docs[j][1]:
+            if docs[i][1] != docs[j][1]:
 
                 #Condition ensures more relevant doc first in tuple
                 if docs[i][1] > docs[j][1]:
-                    if (docs[i][0],docs[j][0]) not in pairs:
-                        pairs.append((docs[i][0],docs[j][0]))
+                    if (docs[i][0], docs[j][0]) not in pairs:
+                        pairs.append((docs[i][0], docs[j][0]))
                         
                 
                 
                 else:
                     if (docs[j][0],docs[i][0]) not in pairs:
-                        pairs.append((docs[j][0],docs[i][0]))
+                        pairs.append((docs[j][0], docs[i][0]))
                         
 
 
@@ -99,16 +99,16 @@ for qid,docs in dictionary_query_docs.items():
 class RankNet(nn.Module):
 
     #Initialises layers in the neural network
-    def __init__(self,input_features,hl1,out):
+    def __init__(self, input_features, hl1, out):
         super().__init__()
-        self.fc1 =nn.Linear(input_features,hl1)
-        self.out=nn.Linear(hl1,out)
+        self.fc1 = nn.Linear(input_features, hl1)
+        self.out = nn.Linear(hl1, out)
 
 
     #Forward pass to compute output from the input
-    def forward(self,x):
+    def forward(self, x):
         x = torch.relu(self.fc1(x))
-        x= self.out(x)
+        x = self.out(x)
 
         return x
 
@@ -122,19 +122,19 @@ features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
 features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
 #Targets are equal to one as the more relevant doc is one the left side, so target is one
-target = torch.ones(len(pairs),1)
+target = torch.ones(len(pairs), 1)
 
 #Defines loss function used for the model
 critierion = nn.BCELoss()
 
 #Used to update weights based on information obtained
-optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
+optimiser = torch.optim.Adam(model.parameters(), lr=0.01)
 
 #How many times to run loop
-epochs=100
+epochs = 100
 
 #Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
-losses=[]
+losses = []
 
 #Train loop
 for i in range(epochs):
@@ -148,7 +148,7 @@ for i in range(epochs):
 
 
     #Calculate loss and add to array
-    loss = critierion(diff,target)
+    loss = critierion(diff, target)
 
     losses.append(loss.detach().numpy())
 
