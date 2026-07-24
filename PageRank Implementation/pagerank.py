@@ -47,6 +47,7 @@ with open(file,"r") as f:
         #Only take into account lines that relate to nodes connections based on URL IDs
         x = re.search(r"([0-9]+)\s([0-9]+)",line)
         if x:
+            #Append groups to array such that  leftmost item in tuple --> rightmost item in tuple
             array.append((int(x.group(1)),int(x.group(2))))
 
 
@@ -74,13 +75,14 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
 
 
     #Modify matrix such that dangling nodes link to all other nodes equally
-
     for row in tr_matrix:
+        #Checks if points to no other nodes
         if sum(row)==0:
+            #Updates values such that transition matrix gives equal probability to all other nodes
             for i in range(len(row)):
                 row[i]=1/len(row)
 
-
+    #Transpostion done to simplify later calculations with node_values
     tr_matrix=tr_matrix.transpose()
     
     
@@ -94,30 +96,36 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
     
     #Run for specified number of iterations to get final PageRank values
     for i in range(iter):
+        #Multiplication to find new values
         new_node_values = np.dot(final_matrix,node_values)
 
+        #Check difference between prior and new values (to check convergence threshold in next step)
         diff= np.absolute(new_node_values-node_values)
         
-
+        #Check to see if all values change by less than threshold
         if np.all(diff < convergence_threshold):
             
+            #If condition met make update and end loop
             node_values=new_node_values
             break
 
-
+        #Update values
         node_values=new_node_values
 
-    
+    #Update number of iterations taken
     iter_taken=i+1
 
+    #Formulate output into readable array
     output=[]
     for i in range(len(node_values)):
         
+        #Add tuples to array such that leftmost entry is nodeID and rightmost tuple is its PageRank value
         output.append((list(graph.nodes)[i],float(node_values[i][0])))
     
 
     # print("Number of iterations till convergence: ",iter_taken)
 
+    #Output number of iterations taken and pagerank values
     return iter_taken,output
 
 
@@ -145,17 +153,27 @@ print()
 
 
 
+#Experiment(s)
 
+
+#Test algorithm with many thresholds to check number of iterations
 test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
 
 
-plot_x=[]
-plot_y=[]
+#arrays to keep track of values to plot
+plot_x=[] #Stores convergence thresholds
+plot_y=[]  #Stores iterations taken at each threshold
+
+
+#Iterate through selected thresholds (from prior array) and run pagerank at each threshold (keeping damping the same throughout for fair testing)
 for val in test_convergence_vals:
+    #Add current threshold value to array
     plot_x.append(val)
+
+    #Add current pagerank iterations taken count to array
     plot_y.append(pagerank(g,100,0.85,val)[0])
 
-
+#Plot and label graph
 plt.plot(plot_x,plot_y)
 plt.xscale("log")
 plt.xlabel("Convergence threshold")
