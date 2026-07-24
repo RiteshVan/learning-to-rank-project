@@ -39,7 +39,7 @@ g = nx.DiGraph()
 file = "placeholder"
 
 #Array used to store node connections as list of tuples
-array=[]
+array = []
 
 #Add tuples to array
 with open(file,"r") as f:
@@ -52,7 +52,7 @@ with open(file,"r") as f:
 
 
 #First line corresponds to total no. nodes and edges, so must be skipped when creating graph
-array =array[1:]
+array = array[1:]
 
 #Creates graph based on array
 for val in array:
@@ -77,10 +77,10 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
     #Modify matrix such that dangling nodes link to all other nodes equally
     for row in tr_matrix:
         #Checks if points to no other nodes
-        if sum(row)==0:
+        if sum(row) == 0:
             #Updates values such that transition matrix gives equal probability to all other nodes
             for i in range(len(row)):
-                row[i]=1/len(row)
+                row[i] = 1/len(row)
 
     #Transpostion done to simplify later calculations with node_values
     tr_matrix=tr_matrix.transpose()
@@ -100,23 +100,23 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
         new_node_values = np.dot(final_matrix,node_values)
 
         #Check difference between prior and new values (to check convergence threshold in next step)
-        diff= np.absolute(new_node_values-node_values)
+        diff = np.absolute(new_node_values-node_values)
         
         #Check to see if all values change by less than threshold
         if np.all(diff < convergence_threshold):
             
             #If condition met make update and end loop
-            node_values=new_node_values
+            node_values = new_node_values
             break
 
         #Update values
         node_values=new_node_values
 
     #Update number of iterations taken
-    iter_taken=i+1
+    iter_taken = i+1
 
     #Formulate output into readable array
-    output=[]
+    output = []
     for i in range(len(node_values)):
         
         #Add tuples to array such that leftmost entry is nodeID and rightmost tuple is its PageRank value
