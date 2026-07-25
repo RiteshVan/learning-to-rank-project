@@ -31,3 +31,6 @@ Began RankNet implementation and loaded in data in strctured clear way and creat
 
 22/7/2026:
 Worked on report LTR overview section.
+
+24/7/2026:
+Completed meeting with supervisor and implemented feedback including streamling references and average time tests for PageRank. 
