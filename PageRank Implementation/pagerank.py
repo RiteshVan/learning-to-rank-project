@@ -129,20 +129,20 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
     return iter_taken,output
 
 
-#Print results from own implementation
-print("Own implementation: ")
-# start = time.time()
-print(sorted(pagerank(g,100,0.85,0.00001)[1][:20], key= lambda x : x[1],reverse=True ) )
-# print("Time taken: ", time.time()-start)
+# #Print results from own implementation
+# print("Own implementation: ")
+# # start = time.time()
+# print(sorted(pagerank(g,100,0.85,0.00001)[1][:20], key= lambda x : x[1],reverse=True ) )
+# # print("Time taken: ", time.time()-start)
 
-#Extra print lines for clarity and separation
-print()
+# #Extra print lines for clarity and separation
+# print()
 
 
-#Print results for built-in function
-#Built-in function also sets damping = 0.85
-print("Compared to networkx built-in function: " )
-print(sorted(list(nx.pagerank(g).items())[:20], key = lambda x : x[1],reverse=True  ))
+# #Print results for built-in function
+# #Built-in function also sets damping = 0.85
+# print("Compared to networkx built-in function: " )
+# print(sorted(list(nx.pagerank(g).items())[:20], key = lambda x : x[1],reverse=True  ))
 
 
 
@@ -189,24 +189,40 @@ test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000
 
 
 
-avg_times_taken=[]
+# avg_times_taken=[]
 
-for val in test_convergence_vals:
+# for val in test_convergence_vals:
 
-    per_val_times=[]
-    for i in range(20):
-        start= time.time()
-        pagerank(g,100,0.85,val)
-        per_val_times.append(time.time() - start)
+#     per_val_times=[]
+#     for i in range(30):
+#         start= time.time()
+#         pagerank(g,100,0.85,val)
+#         per_val_times.append(time.time() - start)
 
 
-    avg_times_taken.append(sum(per_val_times)/len(per_val_times))
+#     avg_times_taken.append(sum(per_val_times)/len(per_val_times))
         
 
-print(avg_times_taken)
-print(test_convergence_vals)
-plt.xscale("log")
-plt.plot(test_convergence_vals,avg_times_taken)
-plt.xlabel("Convergence threshold")
-plt.ylabel("Average time taken to convergence (in seconds)")
-plt.show()
+# print(avg_times_taken)
+# print(test_convergence_vals)
+# plt.xscale("log")
+# plt.plot(test_convergence_vals,avg_times_taken)
+# plt.xlabel("Convergence threshold")
+# plt.ylabel("Average time taken to convergence (in seconds)")
+# plt.show()
+
+
+
+
+#Experiment to find total and average distance from NetworkX results
+
+pagerank_results= list(map(lambda x : x[1] ,sorted(pagerank(g,100,0.85,0.00001)[1],key= lambda x : x[0])))
+
+networkx_results= list(map(lambda x : x[1] ,sorted(list(nx.pagerank(g).items()),key= lambda x : x[0])))
+
+total_diff = np.absolute(np.array(pagerank_results)-np.array(networkx_results))
+
+
+print(sum(total_diff))
+
+print(sum(total_diff)/ len(pagerank_results))
