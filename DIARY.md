@@ -34,3 +34,7 @@ Worked on report LTR overview section.
 
 24/7/2026:
 Completed meeting with supervisor and implemented feedback including streamling references and average time tests for PageRank. 
+
+
+26-27/7/2026:
+Added validaton part to RankNet implementation and continued report (researched more in detail about RankNet and made notes )
