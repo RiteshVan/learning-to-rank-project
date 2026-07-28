@@ -3,6 +3,7 @@ import torch.nn as nn
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
 #Path to dataset being used
@@ -19,7 +20,7 @@ val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/vali.txt"
 
 #Function to get dictionary to iterate through specific docs from each query
 #In particular created to help with calculating nDCG during validation
-#Adaptated from get_pairs_tensors() function
+#Adapted from get_pairs_tensors() function
 def get_dict(dataset_name : str, data_limit : int = None):
     #To store data entries (which consist of query IDs, features and relevancy labels)
     array = []
@@ -265,6 +266,17 @@ losses = []
 #Keep track ofloss on validation set
 val_losses = []
 
+
+
+#Create dictionary for validation set
+val_dict = get_dict(val_dataset_name)
+
+
+#Keep track of nDCG values over the course of execution
+avg_nDCG_vals = []
+
+
+
 #Train loop
 for i in range(epochs):
     #Let model know that coming steps are for training and ensures layers operate as intended
@@ -322,10 +334,116 @@ for i in range(epochs):
 
 
 
+
+
+        #Keep track of nDCG values for each query
+        nDCG_per_query = []
+
+
+        #Iterate through each query in validation set
+        for query in val_dict.keys():
+
+            #To keep track of actual relevancy labels (to be ordered with a sorted function later)
+            actual_rank_order = []
+
+            #Store tuple 
+            #FORMAT:(actual_label,features,predicted_label)  
+            #Later ordered based on scores given
+            predicted_rank_order=[]
+
+
+            #Iterate through each doc per query
+            for item in val_dict[query]:
+
+                #Append actual label to list
+                actual_rank_order.append(item[1])
+
+
+                #Get predicted score for doc
+                #Convert to tensor so model can take doc as input
+                predicted_score = model.forward( torch.tensor(item[0],dtype=torch.float32) )
+
+
+                #Add tuple to keep track of real label, prediction and document itself
+                #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
+                predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+
+
+            #Sort labels in order to find ideal-DCG
+            #Only take top 10 values for NCDG calculation
+            actual_rank_order = sorted(actual_rank_order,reverse=True)[:10]
+
+
+            #Order based predicted score
+            #Only take top 10 values for NCDG calculation
+            predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[2])[:10]
+
+
+            #Keep track of overall values
+            iDCG = 0
+
+            dcg = 0
+
+
+            #Log calculations start at log2(2) then rise iteratively do set variable to 2
+            denominator_val = 2
+
+            #Iterate through actual order vals to find iDCG value
+            for val in actual_rank_order:
+                calc = ((2**val)-1)/math.log2(denominator_val)
+
+
+                #Add to sum
+                iDCG += calc
+
+
+                #Iterate to prepare for next position term
+                denominator_val +=1
+
+
+            #Reset for next loop
+            denominator_val = 2
+
+            #Iterate through predicted order vals to find DCG value
+            for val in predicted_rank_order:
+                #Only take vals from first index as these represent real labels
+                calc = ((2**val[0])-1)/math.log2(denominator_val)
+
+
+                #Add to sum
+                dcg += calc
+            
+
+                #Iterate to prepare for next position term
+                denominator_val += 1
+
+
+                #Checks in case query has no relevant docs connected to it
+                if iDCG != 0 :
+                    #Calculation to find nDCG and add to array
+                    nDCG = dcg /iDCG
+
+                    nDCG_per_query.append(nDCG)
+
+
+        #Append to array overall nDCG val for the query
+        avg_nDCG_vals.append(sum(nDCG_per_query)/len(nDCG_per_query))
+
+
+
+
+        
+
+
+
 #Graph to show how loss changes based on iterations
-plt.ylabel("Losses")
-plt.xlabel("Epochs")
-plt.plot(range(epochs),losses,'r-',label="Training set losses")
-plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
-plt.legend()
+# plt.ylabel("Losses")
+# plt.xlabel("Epochs")
+# plt.plot(range(epochs),losses,'r-',label="Training set losses")
+# plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
+# plt.legend()
+# plt.show()
+
+
+plt.plot(range(epochs),avg_nDCG_vals)
 plt.show()
