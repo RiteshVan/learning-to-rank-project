@@ -296,10 +296,36 @@ for i in range(epochs):
     #Prepare gradients for next loop by resetting current ones
     optimiser.zero_grad()
 
-    
+
+    #Disable model gradient calculations to save memory for inference tasks
+    with torch.no_grad():
+        #Prepares neural network for evaluation tasks
+        model.eval()
+
+
+        #Get outputs from docs from validation set
+        val_output_1 = model.forward(val_features_1)
+        val_output_2 = model.forward(val_features_2)
+
+
+        #Get difference and apply sigmoid to input into loss function
+        val_diff = val_output_1 - val_output_2
+        val_diff = torch.sigmoid(val_diff)
+
+
+        #Calculate loss and store into validation set losses
+        val_loss = critierion(val_diff, val_target)
+
+
+        #Update array to store loss value
+        val_losses.append(val_loss)
+
+
 
 #Graph to show how loss changes based on iterations
 plt.ylabel("Losses")
 plt.xlabel("Epochs")
-plt.plot(range(epochs),losses)
+plt.plot(range(epochs),losses,'r-',label="Training set losses")
+plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
+plt.legend()
 plt.show()
