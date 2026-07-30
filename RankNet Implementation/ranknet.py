@@ -277,6 +277,14 @@ avg_nDCG_vals = []
 
 
 
+
+
+
+
+#Used in order to save the model that gives the best nDCG score
+#Set to negative one as the nDCG values will always be above this
+max_ndcg_val = -1
+
 #Train loop
 for i in range(epochs):
     #Let model know that coming steps are for training and ensures layers operate as intended
@@ -426,13 +434,25 @@ for i in range(epochs):
                     nDCG_per_query.append(nDCG)
 
 
-        #Append to array overall nDCG val for the query
-        avg_nDCG_vals.append(sum(nDCG_per_query)/len(nDCG_per_query))
+        #Append to array overall nDCG val for this iteration
+        nDCG_overall = sum(nDCG_per_query)/len(nDCG_per_query)
+        avg_nDCG_vals.append(nDCG_overall)
 
 
+        #Check if model is new best in terms of nDCG
+        if max_ndcg_val < nDCG_overall:
+            max_ndcg_val = nDCG_overall
 
-
+            #Save only model weights so can be recerated easily for testing
+            torch.save(model.state_dict(), "model-weights.pth")
+            
         
+
+
+test_model = RankNet(len(features_1[0]),30,1)
+test_model.load_state_dict(torch.load("model-weights.pth"))
+print(model)
+
 
 
 
