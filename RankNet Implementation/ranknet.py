@@ -14,8 +14,8 @@ dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/train.txt"
 val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/vali.txt"
 
 
-
-
+#Path to test set
+test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/test.txt"
 
 
 #Function to get dictionary to iterate through specific docs from each query
@@ -451,10 +451,65 @@ for i in range(epochs):
 
 test_model = RankNet(len(features_1[0]),30,1)
 test_model.load_state_dict(torch.load("model-weights.pth"))
-print(model)
+
+
+test_dict = get_dict(test_dataset_name)
 
 
 
+overall_nDCG_to_calc = []
+with torch.no_grad():
+    test_model.eval()
+
+    
+    for query in test_dict.keys():
+        actual_order = []
+
+        pred_order = []
+
+        for doc in test_dict[query]:
+            actual_order.append(doc[1])
+
+
+            doc_score = test_model.forward(torch.tensor(doc[0] ,dtype=torch.float32))
+
+            pred_order.append((doc_score,doc[1]))
+
+
+        actual_order = sorted(actual_order, reverse=True)[:10]
+
+
+        pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:10]
+
+
+        iDCG =0
+
+        denominator_val=2
+        for val in actual_order:
+            calc = ((2**val)-1)/math.log2(denominator_val)
+
+            iDCG += calc
+
+            denominator_val +=1
+
+
+        dcg = 0
+
+        denominator_val=2
+        for val in pred_order:
+            calc =((2**val[1])-1)/math.log2(denominator_val)
+
+            dcg += calc
+
+            denominator_val+=1
+
+
+        if iDCG !=0:
+            overall_nDCG_to_calc.append(dcg/iDCG)
+
+
+
+print(sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc))
 
 #Graph to show how loss changes based on iterations
 # plt.ylabel("Losses")
@@ -465,5 +520,5 @@ print(model)
 # plt.show()
 
 
-plt.plot(range(epochs),avg_nDCG_vals)
-plt.show()
+# plt.plot(range(epochs),avg_nDCG_vals)
+# plt.show()
