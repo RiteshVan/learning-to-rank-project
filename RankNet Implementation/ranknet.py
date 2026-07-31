@@ -163,26 +163,31 @@ def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
     #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
     pairs=[]
 
-
+    target=[]
 
     #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
     for qid,docs in dictionary_query_docs.items():
         #Iterate through documents
         for i in range(len(docs)):
             for j in range(i+1, len(docs)):
-                #Do not create pair if 2 docs have same pair, as purpose of training to understand when a doc is more relevant than another
-                if docs[i][1] != docs[j][1]:
+                #Condition ensures more relevant doc first in tuple
+                if docs[i][1] > docs[j][1]:
+                    if (docs[i][0], docs[j][0]) not in pairs:
+                        pairs.append((docs[i][0], docs[j][0]))
+                        target.append([1])
 
-                    #Condition ensures more relevant doc first in tuple
-                    if docs[i][1] > docs[j][1]:
-                        if (docs[i][0], docs[j][0]) not in pairs:
-                            pairs.append((docs[i][0], docs[j][0]))
-                        
+
+                elif docs[i][1] < docs[j][1]:
+                    if (docs[i][0], docs[j][0]) not in pairs:
+                        pairs.append((docs[j][0], docs[i][0]))
+                        target.append([1])
+
                 
                 
-                    else:
-                        if (docs[j][0], docs[i][0]) not in pairs:
-                            pairs.append((docs[j][0], docs[i][0]))
+                else:
+                    if (docs[j][0], docs[i][0]) not in pairs:
+                        pairs.append((docs[j][0], docs[i][0]))
+                        target.append([0.5])
 
 
 
@@ -193,7 +198,7 @@ def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
 
 
     #Targets are equal to one as the more relevant doc is one the left side, so target is one
-    target = torch.ones(len(features_1),1)
+    target = torch.tensor(target,dtype=torch.float32)
 
 
     #Outputs needed values
@@ -240,7 +245,7 @@ features_2 = data[1]
 #Target values stored
 target= data[2]
 
-
+print(target)
 
 #Find time to load in val dataset
 val_load_time_start = time.time()
