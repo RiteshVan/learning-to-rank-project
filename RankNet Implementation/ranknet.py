@@ -426,12 +426,12 @@ for i in range(epochs):
                 denominator_val += 1
 
 
-                #Checks in case query has no relevant docs connected to it
-                if iDCG != 0 :
-                    #Calculation to find nDCG and add to array
-                    nDCG = dcg /iDCG
+            #Checks in case query has no relevant docs connected to it
+            if iDCG != 0 :
+                #Calculation to find nDCG and add to array
+                nDCG = dcg /iDCG
 
-                    nDCG_per_query.append(nDCG)
+                nDCG_per_query.append(nDCG)
 
 
         #Append to array overall nDCG val for this iteration
@@ -520,5 +520,5 @@ print(sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc))
 # plt.show()
 
 
-# plt.plot(range(epochs),avg_nDCG_vals)
-# plt.show()
+plt.plot(range(epochs),avg_nDCG_vals)
+plt.show()
