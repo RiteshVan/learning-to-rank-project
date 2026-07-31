@@ -4,18 +4,19 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import time
 
 
 #Path to dataset being used
-dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/train.txt"
+dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/train.txt"
 
 
 #Path to validation set
-val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/vali.txt"
+val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/vali.txt"
 
 
 #Path to test set
-test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/test.txt"
+test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/test.txt"
 
 
 #Function to get dictionary to iterate through specific docs from each query
@@ -217,8 +218,20 @@ class RankNet(nn.Module):
 
         return x
 
+
+#Find time to load in train dataset
+train_load_time_start = time.time()
+
+
 #Runs operation once to save time
 data = get_pairs_tensors(dataset_name)
+
+
+
+#Print time taken to load in
+print("Time taken to get train data: ", time.time() - train_load_time_start)
+
+
 
 #Pairs extracted and stored separately
 features_1 = data[0]
@@ -229,10 +242,17 @@ target= data[2]
 
 
 
+#Find time to load in val dataset
+val_load_time_start = time.time()
+
+
 
 #Runs operation once on validation set to save time
 val_set = get_pairs_tensors(val_dataset_name)
 
+
+#Print time taken to load in
+print("Time taken to get val data: ", time.time() - val_load_time_start)
 
 
 
@@ -284,6 +304,16 @@ avg_nDCG_vals = []
 #Used in order to save the model that gives the best nDCG score
 #Set to negative one as the nDCG values will always be above this
 max_ndcg_val = -1
+
+
+
+#Check epoch at which best model is seen
+best_epoch=-1
+
+
+#Used to check how long training and validation takes
+train_time_start = time.time()
+
 
 #Train loop
 for i in range(epochs):
@@ -439,14 +469,32 @@ for i in range(epochs):
         avg_nDCG_vals.append(nDCG_overall)
 
 
-        #Check if model is new best in terms of nDCG
+        #Check if model is new best in terms of NDCG
         if max_ndcg_val < nDCG_overall:
             max_ndcg_val = nDCG_overall
+
+            #Keep track of when this new max NDCG value is seen
+            best_epoch=i
 
             #Save only model weights so can be recerated easily for testing
             torch.save(model.state_dict(), "model-weights.pth")
             
         
+
+#Outputs best NDCG value seen
+print("Best Validation NDCG value obtained is: ", max_ndcg_val)
+print("Value seen after epoch ", best_epoch)
+
+
+#Empty lines printed for visual clarity
+print()
+print()
+print()
+
+
+#Outputs time taken for training and validation process to complete
+print("Time taken for validation and training to be completed (in seconds): " , time.time() - train_time_start)
+
 
 
 test_model = RankNet(len(features_1[0]),30,1)
@@ -509,7 +557,10 @@ with torch.no_grad():
 
 
 
-print(sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc))
+test_ndcg = sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc)
+
+print("Test NDCG: ", test_ndcg)
+
 
 #Graph to show how loss changes based on iterations
 # plt.ylabel("Losses")
@@ -520,5 +571,5 @@ print(sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc))
 # plt.show()
 
 
-plt.plot(range(epochs),avg_nDCG_vals)
-plt.show()
+# plt.plot(range(epochs),avg_nDCG_vals)
+# plt.show()
