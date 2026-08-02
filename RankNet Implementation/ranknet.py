@@ -106,13 +106,13 @@ def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
     #Open file and iterate through and add to array
     with open(dataset_name,"r") as f:
         #Variable to count number of lines read
-        i=0
+        i = 0
 
         for line in f:
             #Add line to array
             array.append(line)
             #Update variable to indicate one more line read
-            i=i+1
+            i = i+1
 
 
             #Used to set limit on number of lines read to not overload resources
@@ -196,7 +196,7 @@ def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
     features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
     features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
-
+    # print(target)
     #Targets are equal to one as the more relevant doc is one the left side, so target is one
     target = torch.tensor(target,dtype=torch.float32)
 
@@ -212,14 +212,14 @@ class RankNet(nn.Module):
     #Initialises layers in the neural network
     def __init__(self,input_features,hl1,out):
         super().__init__()
-        self.fc1 =nn.Linear(input_features,hl1)
-        self.out=nn.Linear(hl1,out)
+        self.fc1 = nn.Linear(input_features,hl1)
+        self.out= nn.Linear(hl1,out)
 
 
     #Forward pass to compute output from the input
     def forward(self,x):
         x = torch.relu(self.fc1(x))
-        x= self.out(x)
+        x = self.out(x)
 
         return x
 
@@ -245,7 +245,7 @@ features_2 = data[1]
 #Target values stored
 target= data[2]
 
-print(target)
+
 
 #Find time to load in val dataset
 val_load_time_start = time.time()
@@ -501,40 +501,64 @@ print()
 print("Time taken for validation and training to be completed (in seconds): " , time.time() - train_time_start)
 
 
+#Testing phase
 
+#Load in the stored model that gave the best nDCG score during validation
+
+#Keep same characteristics as model used for training (same layers, neurons)
 test_model = RankNet(len(features_1[0]),30,1)
+
+#Apply saved weights to model
 test_model.load_state_dict(torch.load("model-weights.pth"))
 
 
+#Load in dictionary that keeps documents associated with each query
 test_dict = get_dict(test_dataset_name)
 
 
-
+#This stores the nDCG values of all queries
 overall_nDCG_to_calc = []
+
+
+#Prep for task with no gradient calculations
 with torch.no_grad():
     test_model.eval()
 
-    
+
+    #Iterate through dictionary query by query
     for query in test_dict.keys():
+
+        #Array to store real order for calculations (sorted later)
         actual_order = []
 
+        #Store predicted orders
         pred_order = []
 
+
+        #Iterate through docs for a given query
         for doc in test_dict[query]:
+            #Add document label to array (to sort later)
             actual_order.append(doc[1])
 
 
+            #Get document relevancy score from the model
             doc_score = test_model.forward(torch.tensor(doc[0] ,dtype=torch.float32))
 
+            #Append as tuple format (pred_relevancy,actual relevancy) 
+            # This so array can be sorted by predicted order, but NDCG calculations 
+            # can be done on actual labels
             pred_order.append((doc_score,doc[1]))
 
 
+        #Order true relevancy labels
         actual_order = sorted(actual_order, reverse=True)[:10]
 
-
+        #Order based on predicted scores
+        #Key used to sort by first term in tuple 
         pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:10]
 
 
+        #Calculations here done with similar operations to those in validation step
         iDCG =0
 
         denominator_val=2
@@ -556,14 +580,18 @@ with torch.no_grad():
 
             denominator_val+=1
 
-
+        #This is done to check in case some queries have no relevant labels 
+        # so must be skipped from final calculation
         if iDCG !=0:
             overall_nDCG_to_calc.append(dcg/iDCG)
 
 
 
+#Add up all NDCG vals for all queries and 
+# then divide by total number of queries to get average
 test_ndcg = sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc)
 
+#Print final NDCG val obtained on test set
 print("Test NDCG: ", test_ndcg)
 
 
