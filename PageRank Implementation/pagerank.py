@@ -222,7 +222,15 @@ networkx_results= list(map(lambda x : x[1] ,sorted(list(nx.pagerank(g).items()),
 
 total_diff = np.absolute(np.array(pagerank_results)-np.array(networkx_results))
 
-
+print(total_diff[:10])
 print(sum(total_diff))
 
 print(sum(total_diff)/ len(pagerank_results))
+
+
+
+plt.plot(range(len(pagerank_results)),total_diff)
+plt.ylabel("Difference between algorithms for each node")
+plt.xlabel("Node ID")
+
+plt.show()
