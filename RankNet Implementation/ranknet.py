@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import math
 import time
 
-
+#MQ2008 Dataset from LETOR 4.0
 #Path to dataset being used
 dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/train.txt"
 
