@@ -40,5 +40,9 @@ Completed meeting with supervisor and implemented feedback including streamling 
 Added validaton part to RankNet implementation. Continued report and research.
 
 
-31/8/2026:
+31/7/2026:
 Done testing part of RankNet
+
+
+1-5/8/2026:
+Ranknet report section continue and experiments for RankNet
