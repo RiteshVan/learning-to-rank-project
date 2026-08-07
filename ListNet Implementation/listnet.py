@@ -6,6 +6,18 @@ import numpy as np
 import math
 
 
+#Path to training dataset
+train_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/train.txt"
+
+
+#Path to validation dataset
+val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/vali.txt"
+
+
+#Path to test dataset
+test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/test.txt"
+
+
 
 #Defines ListNet neural network
 #Follows same structure as RankNet to help make accurate comparisons
