@@ -46,3 +46,6 @@ Done testing part of RankNet
 
 1-5/8/2026:
 Ranknet report section continue and experiments for RankNet
+
+8/8/2026:
+Begin ListNet implementation
