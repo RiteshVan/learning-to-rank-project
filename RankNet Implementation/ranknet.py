@@ -6,299 +6,302 @@ import matplotlib.pyplot as plt
 import math
 import time
 
-#MQ2008 Dataset from LETOR 4.0
-#Path to dataset being used
-dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/train.txt"
 
-
-#Path to validation set
-val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/vali.txt"
-
-
-#Path to test set
-test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold5/test.txt"
-
-
-#Function to get dictionary to iterate through specific docs from each query
-#In particular created to help with calculating nDCG during validation
-#Adapted from get_pairs_tensors() function
-def get_dict(dataset_name : str, data_limit : int = None):
-    #To store data entries (which consist of query IDs, features and relevancy labels)
-    array = []
-
-
-    #Open file and iterate through and add to array
-    with open(dataset_name, "r") as f:
-        #Variable to count number of lines read
-        i = 0
-
-        for line in f:
-            #Add line to array
-            array.append(line)
-            #Update variable to indicate one more line read
-            i=i+1
-
-
-            #Used to set limit on number of lines read to not overload resources
-            if data_limit != None:
-                if i >= data_limit:
-                    #Exit loop once enough lines read
-                    break
+def run(fold : int, ndcg_k : int):
+    #MQ2008 Dataset from LETOR 4.0
+    #Path to dataset being used
+    dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
 
-    #Arrays to store required information about query-doc pairs
-    relevancy_labels = []
-    queries = [] #Query IDs stored
-    features = [] #Array of arrays, with each entry representing a document
+    #Path to validation set
+    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/vali.txt"
 
 
+    #Path to test set
+    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/test.txt"
 
-
-    for val in array:
-        #First char of each entry is relevancy label, so extracted, converted to int and stored
-        relevancy_labels.append(int(val[0]))
-
-        #Finds substring that matched "qid:" prefix
-        if re.search(r"qid:([0-9]+)",val):
-            #Only append group from regular expression that contains qid
-            queries.append(re.search(r"qid:([0-9]+)",val).group(1))
-
-            #Find all features in entry and only extracts numerical terms that refer to feature values
-            feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
-
-            #Convert all data extracted here to floats for future operations
-            features.append(list( map(float,feature_vals)))
-
-
-    #Create dictionary where keys are query IDs and value per key is 
-    # list of tuples where each tuple contains a linked document's features and its relevancy to query
-    dictionary_query_docs = {}
-
-
-    #Iterate through all prior arrays at once to extract required information to store in dictionary
-    for label,qid,f in zip(relevancy_labels,queries,features):
-        #If query not already a key in dictionary, create new entry
-        if qid not in dictionary_query_docs:
-            dictionary_query_docs[qid] = [(f,label)]
-    
-        #If query already present, add tuple to list
-        else:
-            dictionary_query_docs[qid].append((f,label))
-
-    
-    #Function returns dictionary
-    return dictionary_query_docs
-
-
-
-
-
-
-
-
-#Function to get pairs
-def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
-    #To store data entries (which consist of query IDs, features and relevancy labels)
-    array=[]
+    #Function to get dictionary to iterate through specific docs from each query
+    # #In particular created to help with calculating nDCG during validation
+    # #Adapted from get_pairs_tensors() function
+    def get_dict(dataset_name : str, data_limit : int = None):
+        #To store data entries (which consist of query IDs, features and relevancy labels)
+        array = []
 
 
     #Open file and iterate through and add to array
-    with open(dataset_name,"r") as f:
-        #Variable to count number of lines read
-        i = 0
+        with open(dataset_name, "r") as f:
+            #Variable to count number of lines read
+            i = 0
 
-        for line in f:
-            #Add line to array
-            array.append(line)
-            #Update variable to indicate one more line read
-            i = i+1
-
-
-            #Used to set limit on number of lines read to not overload resources
-            if data_limit != None:
-                if i>=data_limit:
-                    #Exit loop once enough lines read
-                    break
+            for line in f:
+                #Add line to array
+                array.append(line)
+                #Update variable to indicate one more line read
+                i=i+1
 
 
-
-    #Arrays to store required information about query-doc pairs
-    relevancy_labels = []
-    queries = [] #Query IDs stored
-    features = [] #Array of arrays, with each entry representing a document
+                #Used to set limit on number of lines read to not overload resources
+                if data_limit != None:
+                    if i >= data_limit:
+                        #Exit loop once enough lines read
+                        break
 
 
 
-    for val in array:
-        #First char of each entry is relevancy label, so extracted, converted to int and stored
-        relevancy_labels.append(int(val[0]))
-
-        #Finds substring that matched "qid:" prefix
-        if re.search(r"qid:([0-9]+)",val):
-            #Only append group from regular expression that contains qid
-            queries.append(re.search(r"qid:([0-9]+)",val).group(1))
-
-            #Find all features in entry and only extracts numerical terms that refer to feature values
-            feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
-
-            #Convert all data extracted here to floats for future operations
-            features.append(list( map(float,feature_vals)))
+        #Arrays to store required information about query-doc pairs
+        relevancy_labels = []
+        queries = [] #Query IDs stored
+        features = [] #Array of arrays, with each entry representing a document
 
 
-    #Create dictionary where keys are query IDs and value per key is list of tuples where each tuple contains a linked document's features and its relevancy to query
-    dictionary_query_docs = {}
 
 
-    #Iterate through all prior arrays at once to extract required information to store in dictionary
-    for label,qid,f in zip(relevancy_labels,queries,features):
-        #If query not already a key in dictionary, create new entry
-        if qid not in dictionary_query_docs:
-            dictionary_query_docs[qid] = [(f,label)]
+        for val in array:
+            #First char of each entry is relevancy label, so extracted, converted to int and stored
+            relevancy_labels.append(int(val[0]))
+
+            #Finds substring that matched "qid:" prefix
+            if re.search(r"qid:([0-9]+)",val):
+                #Only append group from regular expression that contains qid
+                queries.append(re.search(r"qid:([0-9]+)",val).group(1))
+
+                #Find all features in entry and only extracts numerical terms that refer to feature values
+                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+
+                #Convert all data extracted here to floats for future operations
+                features.append(list( map(float,feature_vals)))
+
+
+        #Create dictionary where keys are query IDs and value per key is 
+        # list of tuples where each tuple contains a linked document's features and its relevancy to query
+        dictionary_query_docs = {}
+
+
+        #Iterate through all prior arrays at once to extract required information to store in dictionary
+        for label,qid,f in zip(relevancy_labels,queries,features):
+            #If query not already a key in dictionary, create new entry
+            if qid not in dictionary_query_docs:
+                dictionary_query_docs[qid] = [(f,label)]
     
-        #If query already present, add tuple to list
-        else:
-            dictionary_query_docs[qid].append((f,label))
+            #If query already present, add tuple to list
+            else:
+                dictionary_query_docs[qid].append((f,label))
 
-    #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
-    pairs=[]
-
-    target=[]
-
-    #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
-    for qid,docs in dictionary_query_docs.items():
-        #Iterate through documents
-        for i in range(len(docs)):
-            for j in range(i+1, len(docs)):
-                #Condition ensures more relevant doc first in tuple
-                if docs[i][1] > docs[j][1]:
-                    if (docs[i][0], docs[j][0]) not in pairs:
-                        pairs.append((docs[i][0], docs[j][0]))
-                        target.append([1])
+    
+        #Function returns dictionary
+        return dictionary_query_docs
 
 
-                elif docs[i][1] < docs[j][1]:
-                    if (docs[i][0], docs[j][0]) not in pairs:
-                        pairs.append((docs[j][0], docs[i][0]))
-                        target.append([1])
+
+
+
+
+
+
+    #Function to get pairs
+    def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
+        #To store data entries (which consist of query IDs, features and relevancy labels)
+        array=[]
+
+
+        #Open file and iterate through and add to array
+        with open(dataset_name,"r") as f:
+            #Variable to count number of lines read
+            i = 0
+
+            for line in f:
+                #Add line to array
+                array.append(line)
+                #Update variable to indicate one more line read
+                i = i+1
+
+
+                #Used to set limit on number of lines read to not overload resources
+                if data_limit != None:
+                    if i>=data_limit:
+                        #Exit loop once enough lines read
+                        break
+
+
+
+        #Arrays to store required information about query-doc pairs
+        relevancy_labels = []
+        queries = [] #Query IDs stored
+        features = [] #Array of arrays, with each entry representing a document
+
+
+
+        for val in array:
+            #First char of each entry is relevancy label, so extracted, converted to int and stored
+            relevancy_labels.append(int(val[0]))
+
+            #Finds substring that matched "qid:" prefix
+            if re.search(r"qid:([0-9]+)",val):
+                #Only append group from regular expression that contains qid
+                queries.append(re.search(r"qid:([0-9]+)",val).group(1))
+
+                #Find all features in entry and only extracts numerical terms that refer to feature values
+                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+
+                #Convert all data extracted here to floats for future operations
+                features.append(list( map(float,feature_vals)))
+
+
+        #Create dictionary where keys are query IDs and value per key is list of tuples where each tuple contains a linked document's features and its relevancy to query
+        dictionary_query_docs = {}
+
+
+        #Iterate through all prior arrays at once to extract required information to store in dictionary
+        for label,qid,f in zip(relevancy_labels,queries,features):
+            #If query not already a key in dictionary, create new entry
+            if qid not in dictionary_query_docs:
+                dictionary_query_docs[qid] = [(f,label)]
+    
+            #If query already present, add tuple to list
+            else:
+                dictionary_query_docs[qid].append((f,label))
+
+        #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
+        pairs=[]
+
+        target=[]
+
+        #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
+        for qid,docs in dictionary_query_docs.items():
+            #Iterate through documents
+            for i in range(len(docs)):
+                for j in range(i+1, len(docs)):
+                    #Condition ensures more relevant doc first in tuple
+                    if docs[i][1] > docs[j][1]:
+                        if (docs[i][0], docs[j][0]) not in pairs:
+                            pairs.append((docs[i][0], docs[j][0]))
+                            target.append([1])
+
+
+                    elif docs[i][1] < docs[j][1]:
+                        if (docs[i][0], docs[j][0]) not in pairs:
+                            pairs.append((docs[j][0], docs[i][0]))
+                            target.append([1])
 
                 
                 
-                else:
-                    if (docs[j][0], docs[i][0]) not in pairs:
-                        pairs.append((docs[j][0], docs[i][0]))
-                        target.append([0.5])
+                    else:
+                        if (docs[j][0], docs[i][0]) not in pairs:
+                            pairs.append((docs[j][0], docs[i][0]))
+                            target.append([0.5])
+                            # continue
 
 
 
-    #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
-    #Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
-    features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
-    features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
+        #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
+        #Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
+        features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
+        features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
-    # print(target)
-    #Targets are equal to one as the more relevant doc is one the left side, so target is one
-    target = torch.tensor(target,dtype=torch.float32)
+        # print(target)
+        #Targets are equal to one as the more relevant doc is one the left side, so target is one
+        target = torch.tensor(target,dtype=torch.float32)
 
 
-    #Outputs needed values
-    return features_1,features_2,target
+        #Outputs needed values
+        return features_1,features_2,target
 
 
 
-#Defines RankNet model
-class RankNet(nn.Module):
+    #Defines RankNet model
+    class RankNet(nn.Module):
 
-    #Initialises layers in the neural network
-    def __init__(self,input_features,hl1,out):
-        super().__init__()
-        self.fc1 = nn.Linear(input_features,hl1)
-        self.out= nn.Linear(hl1,out)
+        #Initialises layers in the neural network
+        def __init__(self,input_features,hl1,out):
+            super().__init__()
+            self.fc1 = nn.Linear(input_features,hl1)
+            self.out= nn.Linear(hl1,out)
 
 
-    #Forward pass to compute output from the input
-    def forward(self,x):
-        x = torch.relu(self.fc1(x))
-        x = self.out(x)
+        #Forward pass to compute output from the input
+        def forward(self,x):
+            x = torch.relu(self.fc1(x))
+            x = self.out(x)
 
-        return x
+            return x
 
 
-#Find time to load in train dataset
-train_load_time_start = time.time()
+    #Find time to load in train dataset
+    train_load_time_start = time.time()
 
 
-#Runs operation once to save time
-data = get_pairs_tensors(dataset_name)
+    #Runs operation once to save time
+    data = get_pairs_tensors(dataset_name)
 
 
 
-#Print time taken to load in
-print("Time taken to get train data: ", time.time() - train_load_time_start)
+    #Print time taken to load in
+    print("Time taken to get train data: ", time.time() - train_load_time_start)
 
 
 
-#Pairs extracted and stored separately
-features_1 = data[0]
-features_2 = data[1]
+    #Pairs extracted and stored separately
+    features_1 = data[0]
+    features_2 = data[1]
 
-#Target values stored
-target= data[2]
+    #Target values stored
+    target= data[2]
 
 
 
-#Find time to load in val dataset
-val_load_time_start = time.time()
+    #Find time to load in val dataset
+    val_load_time_start = time.time()
 
 
 
-#Runs operation once on validation set to save time
-val_set = get_pairs_tensors(val_dataset_name)
+    #Runs operation once on validation set to save time
+    val_set = get_pairs_tensors(val_dataset_name)
 
 
-#Print time taken to load in
-print("Time taken to get val data: ", time.time() - val_load_time_start)
+    #Print time taken to load in
+    print("Time taken to get val data: ", time.time() - val_load_time_start)
 
 
 
-#Pairs extracted and stored separately
-val_features_1 = val_set[0]
-val_features_2 = val_set[1]
+    #Pairs extracted and stored separately
+    val_features_1 = val_set[0]
+    val_features_2 = val_set[1]
 
 
-#Target values stored
-val_target=val_set[2]
+    #Target values stored
+    val_target=val_set[2]
 
 
 
 
 
-#Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
-model=RankNet(len(features_1[0]),30,1)
+    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
+    model=RankNet(len(features_1[0]),30,1)
 
-#Defines loss function used for the model
-critierion = nn.BCELoss()
+    #Defines loss function used for the model
+    critierion = nn.BCELoss()
 
-#Used to update weights based on information obtained
-optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
+    #Used to update weights based on information obtained
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
-#How many times to run loop
-epochs = 100
+    #How many times to run loop
+    epochs = 100
 
-#Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
-losses = []
+    #Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
+    losses = []
 
-#Keep track ofloss on validation set
-val_losses = []
+    #Keep track ofloss on validation set
+    val_losses = []
 
 
 
-#Create dictionary for validation set
-val_dict = get_dict(val_dataset_name)
+    #Create dictionary for validation set
+    val_dict = get_dict(val_dataset_name)
 
 
-#Keep track of nDCG values over the course of execution
-avg_nDCG_vals = []
+    #Keep track of nDCG values over the course of execution
+    avg_nDCG_vals = []
 
 
 
@@ -306,303 +309,308 @@ avg_nDCG_vals = []
 
 
 
-#Used in order to save the model that gives the best nDCG score
-#Set to negative one as the nDCG values will always be above this
-max_ndcg_val = -1
+    #   Used in order to save the model that gives the best nDCG score
+    #Set to negative one as the nDCG values will always be above this
+    max_ndcg_val = -1
 
 
 
-#Check epoch at which best model is seen
-best_epoch=-1
+    #Check epoch at which best model is seen
+    best_epoch=-1
 
 
-#Used to check how long training and validation takes
-train_time_start = time.time()
+    #Used to check how long training and validation takes
+    train_time_start = time.time()
 
+    print(features_1)
 
-#Train loop
-for i in range(epochs):
-    #Let model know that coming steps are for training and ensures layers operate as intended
-    model.train()
+    #Train loop
+    for i in range(epochs):
+        #Let model know that coming steps are for training and ensures layers operate as intended
+        model.train()
 
-    #Outputs obtained as docs are input into network
-    output_1 = model.forward(features_1)
-    output_2 = model.forward(features_2)
+        #Outputs obtained as docs are input into network
+        output_1 = model.forward(features_1)
+        output_2 = model.forward(features_2)
 
-    #Calculates difference  and its sigmoid value befor inputting into loss function
-    diff = output_1 - output_2 
-    diff = torch.sigmoid(diff)
+        #Calculates difference  and its sigmoid value befor inputting into loss function
+        diff = output_1 - output_2 
+        diff = torch.sigmoid(diff)
 
 
-    #Calculate loss and add to array
-    loss = critierion(diff,target)
+        #Calculate loss and add to array
+        loss = critierion(diff,target)
 
-    losses.append(loss.detach().numpy())
+        losses.append(loss.detach().numpy())
 
 
     
 
-    #Compute gradients
-    loss.backward()
+        #Compute gradients
+        loss.backward()
 
-    #Weight adjustment from optimiser
-    optimiser.step()
+        #Weight adjustment from optimiser
+        optimiser.step()
 
-    #Prepare gradients for next loop by resetting current ones
-    optimiser.zero_grad()
-
-
-    #Disable model gradient calculations to save memory for inference tasks
-    with torch.no_grad():
-        #Prepares neural network for evaluation tasks
-        model.eval()
+        #Prepare gradients for next loop by resetting current ones
+        optimiser.zero_grad()
 
 
-        #Get outputs from docs from validation set
-        val_output_1 = model.forward(val_features_1)
-        val_output_2 = model.forward(val_features_2)
+        #Disable model gradient calculations to save memory for inference tasks
+        with torch.no_grad():
+            #Prepares neural network for evaluation tasks
+            model.eval()
 
 
-        #Get difference and apply sigmoid to input into loss function
-        val_diff = val_output_1 - val_output_2
-        val_diff = torch.sigmoid(val_diff)
+            #Get outputs from docs from validation set
+            val_output_1 = model.forward(val_features_1)
+            val_output_2 = model.forward(val_features_2)
 
 
-        #Calculate loss and store into validation set losses
-        val_loss = critierion(val_diff, val_target)
+            #Get difference and apply sigmoid to input into loss function
+            val_diff = val_output_1 - val_output_2
+            val_diff = torch.sigmoid(val_diff)
 
 
-        #Update array to store loss value
-        val_losses.append(val_loss)
+            #Calculate loss and store into validation set losses
+            val_loss = critierion(val_diff, val_target)
 
 
+            #Update array to store loss value
+            val_losses.append(val_loss)
 
 
 
-        #Keep track of nDCG values for each query
-        nDCG_per_query = []
 
 
-        #Iterate through each query in validation set
-        for query in val_dict.keys():
-
-            #To keep track of actual relevancy labels (to be ordered with a sorted function later)
-            actual_rank_order = []
-
-            #Store tuple 
-            #FORMAT:(actual_label,features,predicted_label)  
-            #Later ordered based on scores given
-            predicted_rank_order=[]
+            #Keep track of nDCG values for each query
+            nDCG_per_query = []
 
 
-            #Iterate through each doc per query
-            for item in val_dict[query]:
+            #Iterate through each query in validation set
+            for query in val_dict.keys():
 
-                #Append actual label to list
-                actual_rank_order.append(item[1])
+                #To keep track of actual relevancy labels (to be ordered with a sorted function later)
+                actual_rank_order = []
 
-
-                #Get predicted score for doc
-                #Convert to tensor so model can take doc as input
-                predicted_score = model.forward( torch.tensor(item[0],dtype=torch.float32) )
-
-
-                #Add tuple to keep track of real label, prediction and document itself
-                #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
-                predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+                #Store tuple 
+                #FORMAT:(actual_label,features,predicted_label)  
+                #Later ordered based on scores given
+                predicted_rank_order=[]
 
 
-            #Sort labels in order to find ideal-DCG
-            #Only take top 10 values for NCDG calculation
-            actual_rank_order = sorted(actual_rank_order,reverse=True)[:10]
+                #Iterate through each doc per query
+                for item in val_dict[query]:
+
+                    #Append actual label to list
+                    actual_rank_order.append(item[1])
 
 
-            #Order based predicted score
-            #Only take top 10 values for NCDG calculation
-            predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[2])[:10]
+                    #Get predicted score for doc
+                    #Convert to tensor so model can take doc as input
+                    predicted_score = model.forward( torch.tensor(item[0],dtype=torch.float32) )
 
 
-            #Keep track of overall values
-            iDCG = 0
-
-            dcg = 0
-
-
-            #Log calculations start at log2(2) then rise iteratively do set variable to 2
-            denominator_val = 2
-
-            #Iterate through actual order vals to find iDCG value
-            for val in actual_rank_order:
-                calc = ((2**val)-1)/math.log2(denominator_val)
+                    #Add tuple to keep track of real label, prediction and document itself
+                    #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
+                    predicted_rank_order.append((item[1],item[0],float(predicted_score)))
 
 
-                #Add to sum
-                iDCG += calc
+                #Sort labels in order to find ideal-DCG
+                #Only take top 10 values for NCDG calculation
+                actual_rank_order = sorted(actual_rank_order,reverse=True)[:ndcg_k]
 
 
-                #Iterate to prepare for next position term
-                denominator_val +=1
+                #Order based predicted score
+                #Only take top 10 values for NCDG calculation
+                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[2])[:ndcg_k]
 
 
-            #Reset for next loop
-            denominator_val = 2
+                #Keep track of overall values
+                iDCG = 0
 
-            #Iterate through predicted order vals to find DCG value
-            for val in predicted_rank_order:
-                #Only take vals from first index as these represent real labels
-                calc = ((2**val[0])-1)/math.log2(denominator_val)
+                dcg = 0
 
 
-                #Add to sum
-                dcg += calc
+                #Log calculations start at log2(2) then rise iteratively do set variable to 2
+                denominator_val = 2
+
+                #Iterate through actual order vals to find iDCG value
+                for val in actual_rank_order:
+                    calc = ((2**val)-1)/math.log2(denominator_val)
+
+
+                    #Add to sum
+                    iDCG += calc
+
+
+                    #Iterate to prepare for next position term
+                    denominator_val +=1
+
+
+                #Reset for next loop
+                denominator_val = 2
+
+                #Iterate through predicted order vals to find DCG value
+                for val in predicted_rank_order:
+                    #Only take vals from first index as these represent real labels
+                    calc = ((2**val[0])-1)/math.log2(denominator_val)
+
+
+                    #Add to sum
+                    dcg += calc
             
 
-                #Iterate to prepare for next position term
-                denominator_val += 1
+                    #Iterate to prepare for next position term
+                    denominator_val += 1
 
 
-            #Checks in case query has no relevant docs connected to it
-            if iDCG != 0 :
-                #Calculation to find nDCG and add to array
-                nDCG = dcg /iDCG
+                #Checks in case query has no relevant docs connected to it
+                if iDCG != 0 :
+                    #Calculation to find nDCG and add to array
+                    nDCG = dcg /iDCG
 
-                nDCG_per_query.append(nDCG)
-
-
-        #Append to array overall nDCG val for this iteration
-        nDCG_overall = sum(nDCG_per_query)/len(nDCG_per_query)
-        avg_nDCG_vals.append(nDCG_overall)
+                    nDCG_per_query.append(nDCG)
 
 
-        #Check if model is new best in terms of NDCG
-        if max_ndcg_val < nDCG_overall:
-            max_ndcg_val = nDCG_overall
+            #Append to array overall nDCG val for this iteration
+            nDCG_overall = sum(nDCG_per_query)/len(nDCG_per_query)
+            avg_nDCG_vals.append(nDCG_overall)
 
-            #Keep track of when this new max NDCG value is seen
-            best_epoch=i
 
-            #Save only model weights so can be recerated easily for testing
-            torch.save(model.state_dict(), "model-weights.pth")
+            #Check if model is new best in terms of NDCG
+            if max_ndcg_val < nDCG_overall:
+                max_ndcg_val = nDCG_overall
+
+                #Keep track of when this new max NDCG value is seen
+                best_epoch=i
+
+                #Save only model weights so can be recerated easily for testing
+                torch.save(model.state_dict(), "model-weights.pth")
             
         
 
-#Outputs best NDCG value seen
-print("Best Validation NDCG value obtained is: ", max_ndcg_val)
-print("Value seen after epoch ", best_epoch)
+    #Outputs best NDCG value seen
+    print("Best Validation NDCG value obtained is: ", max_ndcg_val)
+    print("Value seen after epoch ", best_epoch)
 
 
-#Empty lines printed for visual clarity
-print()
-print()
-print()
+    #Empty lines printed for visual clarity
+    print()
+    print()
+    print()
 
 
-#Outputs time taken for training and validation process to complete
-print("Time taken for validation and training to be completed (in seconds): " , time.time() - train_time_start)
+    #Outputs time taken for training and validation process to complete
+    print("Time taken for validation and training to be completed (in seconds): " , time.time() - train_time_start)
 
 
-#Testing phase
+    #Testing phase
 
-#Load in the stored model that gave the best nDCG score during validation
+    #Load in the stored model that gave the best nDCG score during validation
 
-#Keep same characteristics as model used for training (same layers, neurons)
-test_model = RankNet(len(features_1[0]),30,1)
+    #Keep same characteristics as model used for training (same layers, neurons)
+    test_model = RankNet(len(features_1[0]),30,1)
 
-#Apply saved weights to model
-test_model.load_state_dict(torch.load("model-weights.pth"))
-
-
-#Load in dictionary that keeps documents associated with each query
-test_dict = get_dict(test_dataset_name)
+    #Apply saved weights to model
+    test_model.load_state_dict(torch.load("model-weights.pth"))
 
 
-#This stores the nDCG values of all queries
-overall_nDCG_to_calc = []
+    #Load in dictionary that keeps documents associated with each query
+    test_dict = get_dict(test_dataset_name)
 
 
-#Prep for task with no gradient calculations
-with torch.no_grad():
-    test_model.eval()
+    #This stores the nDCG values of all queries
+    overall_nDCG_to_calc = []
 
 
-    #Iterate through dictionary query by query
-    for query in test_dict.keys():
-
-        #Array to store real order for calculations (sorted later)
-        actual_order = []
-
-        #Store predicted orders
-        pred_order = []
+    #Prep for task with no gradient calculations
+    with torch.no_grad():
+        test_model.eval()
 
 
-        #Iterate through docs for a given query
-        for doc in test_dict[query]:
-            #Add document label to array (to sort later)
-            actual_order.append(doc[1])
+        #Iterate through dictionary query by query
+        for query in test_dict.keys():
+
+            #Array to store real order for calculations (sorted later)
+            actual_order = []
+
+            #Store predicted orders
+            pred_order = []
 
 
-            #Get document relevancy score from the model
-            doc_score = test_model.forward(torch.tensor(doc[0] ,dtype=torch.float32))
-
-            #Append as tuple format (pred_relevancy,actual relevancy) 
-            # This so array can be sorted by predicted order, but NDCG calculations 
-            # can be done on actual labels
-            pred_order.append((doc_score,doc[1]))
+            #Iterate through docs for a given query
+            for doc in test_dict[query]:
+                #Add document label to array (to sort later)
+                actual_order.append(doc[1])
 
 
-        #Order true relevancy labels
-        actual_order = sorted(actual_order, reverse=True)[:10]
+                #Get document relevancy score from the model
+                doc_score = test_model.forward(torch.tensor(doc[0] ,dtype=torch.float32))
 
-        #Order based on predicted scores
-        #Key used to sort by first term in tuple 
-        pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:10]
-
-
-        #Calculations here done with similar operations to those in validation step
-        iDCG =0
-
-        denominator_val=2
-        for val in actual_order:
-            calc = ((2**val)-1)/math.log2(denominator_val)
-
-            iDCG += calc
-
-            denominator_val +=1
+                #Append as tuple format (pred_relevancy,actual relevancy) 
+                # This so array can be sorted by predicted order, but NDCG calculations 
+                # can be done on actual labels
+                pred_order.append((doc_score,doc[1]))
 
 
-        dcg = 0
+            #Order true relevancy labels
+            actual_order = sorted(actual_order, reverse=True)[:ndcg_k]
 
-        denominator_val=2
-        for val in pred_order:
-            calc =((2**val[1])-1)/math.log2(denominator_val)
-
-            dcg += calc
-
-            denominator_val+=1
-
-        #This is done to check in case some queries have no relevant labels 
-        # so must be skipped from final calculation
-        if iDCG !=0:
-            overall_nDCG_to_calc.append(dcg/iDCG)
+            #Order based on predicted scores
+            #Key used to sort by first term in tuple 
+            pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:ndcg_k]
 
 
+            #Calculations here done with similar operations to those in validation step
+            iDCG =0
 
-#Add up all NDCG vals for all queries and 
-# then divide by total number of queries to get average
-test_ndcg = sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc)
+            denominator_val=2
+            for val in actual_order:
+                calc = ((2**val)-1)/math.log2(denominator_val)
 
-#Print final NDCG val obtained on test set
-print("Test NDCG: ", test_ndcg)
+                iDCG += calc
 
-
-#Graph to show how loss changes based on iterations
-# plt.ylabel("Losses")
-# plt.xlabel("Epochs")
-# plt.plot(range(epochs),losses,'r-',label="Training set losses")
-# plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
-# plt.legend()
-# plt.show()
+                denominator_val +=1
 
 
-# plt.plot(range(epochs),avg_nDCG_vals)
-# plt.show()
+            dcg = 0
+
+            denominator_val=2
+            for val in pred_order:
+                calc =((2**val[1])-1)/math.log2(denominator_val)
+
+                dcg += calc
+
+                denominator_val+=1
+
+            #This is done to check in case some queries have no relevant labels 
+            # so must be skipped from final calculation
+            if iDCG !=0:
+                overall_nDCG_to_calc.append(dcg/iDCG)
+
+
+
+    #Add up all NDCG vals for all queries and 
+    # then divide by total number of queries to get average
+    test_ndcg = sum(overall_nDCG_to_calc)/len(overall_nDCG_to_calc)
+
+    #Print final NDCG val obtained on test set
+    print("Test NDCG: ", test_ndcg)
+
+
+    #Graph to show how loss changes based on iterations
+    # plt.ylabel("Losses")
+    # plt.xlabel("Epochs")
+    # plt.plot(range(epochs),losses,'r-',label="Training set losses")
+    # plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
+    # plt.legend()
+    # plt.show()
+
+
+    # plt.plot(range(epochs),avg_nDCG_vals)
+    # plt.show()
+
+
+    return max_ndcg_val, best_epoch, test_ndcg
+
