@@ -117,10 +117,13 @@ class ListNet(nn.Module):
 
         return x
 
-model = ListNet(46,10,1)
+model = ListNet(46,8,1)
 
 
 training_input = get_network_input(train_dataset_name)
+
+
+validation_input = get_network_input(val_dataset_name)
 
 
 optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
@@ -128,12 +131,15 @@ optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
 epochs = 100
 
 
-losses=[]
+train_losses=[]
+
+val_losses=[]
 
 
 for _ in range(epochs):
-    loss_avg=[]
+    train_loss_avg=[]
     for j in range(len(training_input)):
+        model.train()
 
         documents = training_input[j][0]
 
@@ -153,7 +159,7 @@ for _ in range(epochs):
         loss = -torch.sum(targets * torch.log2(scores))
 
 
-        loss_avg.append(loss.detach().numpy())
+        train_loss_avg.append(loss.detach().numpy())
 
         loss.backward()
 
@@ -162,9 +168,40 @@ for _ in range(epochs):
 
         optimiser.zero_grad()
 
-    losses.append(sum(loss_avg)/len(loss_avg))
+    train_losses.append(sum(train_loss_avg)/len(train_loss_avg))
+
+
+    val_loss_avg=[]
+    with torch.no_grad():
+        model.eval()
+        for k in range(len(validation_input)):
+
+            documents = validation_input[k][0]
+
+            targets = validation_input[k][1]
+
+            scores = model.forward(documents)
+
+            scores = torch.flatten(scores)
+
+            scores=torch.softmax(scores,-1)
+
+
+            targets = torch.softmax(targets,-1)
+
+            val_loss =  -torch.sum(targets * torch.log2(scores))
+
+            val_loss_avg.append(val_loss.detach().numpy())
+
+        val_losses.append(sum(val_loss_avg)/len(val_loss_avg))
+
+
+            
+        
 
 
 
-plt.plot(range(epochs),losses)
-plt.show()
+
+
+
+
