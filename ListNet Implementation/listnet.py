@@ -113,6 +113,58 @@ class ListNet(nn.Module):
     # and activation functions used to reach output
     def forward(self,x):
         x = torch.relu(self.fc1(x))
-        x = self.out()
+        x = self.out(x)
 
         return x
+
+model = ListNet(46,10,1)
+
+
+training_input = get_network_input(train_dataset_name)
+
+
+optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+
+epochs = 100
+
+
+losses=[]
+
+
+for _ in range(epochs):
+    loss_avg=[]
+    for j in range(len(training_input)):
+
+        documents = training_input[j][0]
+
+        targets = training_input[j][1]
+
+
+        scores = model.forward(documents)
+
+        scores = torch.flatten(scores)
+
+        scores = torch.softmax(scores,-1)
+
+        targets = torch.softmax(targets,-1)
+
+
+
+        loss = -torch.sum(targets * torch.log2(scores))
+
+
+        loss_avg.append(loss.detach().numpy())
+
+        loss.backward()
+
+        optimiser.step()
+
+
+        optimiser.zero_grad()
+
+    losses.append(sum(loss_avg)/len(loss_avg))
+
+
+
+plt.plot(range(epochs),losses)
+plt.show()
