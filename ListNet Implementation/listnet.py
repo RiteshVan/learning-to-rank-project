@@ -20,7 +20,7 @@ test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold1/test.txt"
 
 
 #Function to organise documents linked to each query
-def get_dict(dataset_name : str):
+def get_network_input(dataset_name : str):
 
     #Used to store lines from dataset (corresponds to doc-query pair)
     array = []
@@ -73,8 +73,27 @@ def get_dict(dataset_name : str):
             dictionary_query_docs[qid].append((f,label))
 
     
-    #Function returns dictionary
-    return dictionary_query_docs
+
+    network_input=[]
+
+
+    for query in dictionary_query_docs.keys():
+        query_docs=[]
+        query_targets=[]
+
+        for document,target in dictionary_query_docs[query]:
+            query_docs.append(document)
+            query_targets.append(target)
+
+
+        query_docs = torch.tensor(query_docs,dtype=torch.float32)
+
+        query_targets = torch.tensor(query_targets,dtype=torch.float32)
+
+        network_input.append((query_docs,query_targets))
+
+
+    return network_input
 
 
 
@@ -97,4 +116,3 @@ class ListNet(nn.Module):
         x = self.out()
 
         return x
-
