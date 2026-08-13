@@ -195,7 +195,7 @@ class ListNet(nn.Module):
 
         return x
 
-model = ListNet(46,10,10,1)
+model = ListNet(46,5,5,1)
 
 
 training_input = get_network_input(train_dataset_name)
@@ -364,6 +364,7 @@ for i in range(epochs):
 
 
 
+print(best_epoch)
 plt.plot(range(epochs),val_NDCG_tracking)
 plt.show()
 
