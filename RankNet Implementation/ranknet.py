@@ -6,8 +6,236 @@ import matplotlib.pyplot as plt
 import math
 import time
 
+#Function to obtain data with no pairs that have equal relevancy labels
+def get_data_without_equal_pairs(fold : int):
+    #MQ2008 Dataset from LETOR 4.0
+    #Path to dataset being used
+    dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
-def run(fold : int, ndcg_k : int):
+
+
+    #Path to validation set
+    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/vali.txt"
+
+
+    #Path to test set
+    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/test.txt"
+
+    #Function to get dictionary to iterate through specific docs from each query
+    # #In particular created to help with calculating nDCG during validation
+    # #Adapted from get_pairs_tensors() function
+    def get_dict(dataset_name : str, data_limit : int = None):
+        #To store data entries (which consist of query IDs, features and relevancy labels)
+        array = []
+
+
+    #Open file and iterate through and add to array
+        with open(dataset_name, "r") as f:
+            #Variable to count number of lines read
+            i = 0
+
+            for line in f:
+                #Add line to array
+                array.append(line)
+                #Update variable to indicate one more line read
+                i=i+1
+
+
+                #Used to set limit on number of lines read to not overload resources
+                if data_limit != None:
+                    if i >= data_limit:
+                        #Exit loop once enough lines read
+                        break
+
+
+
+        #Arrays to store required information about query-doc pairs
+        relevancy_labels = []
+        queries = [] #Query IDs stored
+        features = [] #Array of arrays, with each entry representing a document
+
+
+
+
+        for val in array:
+            #First char of each entry is relevancy label, so extracted, converted to int and stored
+            relevancy_labels.append(int(val[0]))
+
+            #Finds substring that matched "qid:" prefix
+            if re.search(r"qid:([0-9]+)",val):
+                #Only append group from regular expression that contains qid
+                queries.append(re.search(r"qid:([0-9]+)",val).group(1))
+
+                #Find all features in entry and only extracts numerical terms that refer to feature values
+                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+
+                #Convert all data extracted here to floats for future operations
+                features.append(list( map(float,feature_vals)))
+
+
+        #Create dictionary where keys are query IDs and value per key is 
+        # list of tuples where each tuple contains a linked document's features and its relevancy to query
+        dictionary_query_docs = {}
+
+
+        #Iterate through all prior arrays at once to extract required information to store in dictionary
+        for label,qid,f in zip(relevancy_labels,queries,features):
+            #If query not already a key in dictionary, create new entry
+            if qid not in dictionary_query_docs:
+                dictionary_query_docs[qid] = [(f,label)]
+    
+            #If query already present, add tuple to list
+            else:
+                dictionary_query_docs[qid].append((f,label))
+
+    
+        #Function returns dictionary
+        return dictionary_query_docs
+
+
+
+
+
+
+
+
+    #Function to get pairs
+    def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
+        #To store data entries (which consist of query IDs, features and relevancy labels)
+        array=[]
+
+
+        #Open file and iterate through and add to array
+        with open(dataset_name,"r") as f:
+            #Variable to count number of lines read
+            i = 0
+
+            for line in f:
+                #Add line to array
+                array.append(line)
+                #Update variable to indicate one more line read
+                i = i+1
+
+
+                #Used to set limit on number of lines read to not overload resources
+                if data_limit != None:
+                    if i>=data_limit:
+                        #Exit loop once enough lines read
+                        break
+
+
+
+        #Arrays to store required information about query-doc pairs
+        relevancy_labels = []
+        queries = [] #Query IDs stored
+        features = [] #Array of arrays, with each entry representing a document
+
+
+
+        for val in array:
+            #First char of each entry is relevancy label, so extracted, converted to int and stored
+            relevancy_labels.append(int(val[0]))
+
+            #Finds substring that matched "qid:" prefix
+            if re.search(r"qid:([0-9]+)",val):
+                #Only append group from regular expression that contains qid
+                queries.append(re.search(r"qid:([0-9]+)",val).group(1))
+
+                #Find all features in entry and only extracts numerical terms that refer to feature values
+                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+
+                #Convert all data extracted here to floats for future operations
+                features.append(list( map(float,feature_vals)))
+
+
+        #Create dictionary where keys are query IDs and value per key is list of tuples where each tuple contains a linked document's features and its relevancy to query
+        dictionary_query_docs = {}
+
+
+        #Iterate through all prior arrays at once to extract required information to store in dictionary
+        for label,qid,f in zip(relevancy_labels,queries,features):
+            #If query not already a key in dictionary, create new entry
+            if qid not in dictionary_query_docs:
+                dictionary_query_docs[qid] = [(f,label)]
+    
+            #If query already present, add tuple to list
+            else:
+                dictionary_query_docs[qid].append((f,label))
+
+        #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
+        pairs=[]
+
+        target=[]
+
+        #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
+        for qid in dictionary_query_docs.keys():
+            #Iterate through documents
+            for i in range(len(dictionary_query_docs[qid])):
+                for j in range(i+1, len(dictionary_query_docs[qid])):
+                    #Condition ensures more relevant doc first in tuple
+                    if dictionary_query_docs[qid][i][1] > dictionary_query_docs[qid][j][1]:
+                        if (dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]) not in pairs:
+                            pairs.append((dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]))
+                            target.append([1])
+
+
+                    elif dictionary_query_docs[qid][i][1] < dictionary_query_docs[qid][j][1]:
+                        if (dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]) not in pairs:
+                            pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
+                            target.append([1])
+
+                
+                
+                    else:
+                        if (dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]) not in pairs:
+                        # pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
+                        # target.append([0.5])
+                            continue
+
+
+
+        #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
+        #Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
+        features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
+        features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
+
+        # print(target)
+        #Targets are equal to one as the more relevant doc is one the left side, so target is one
+        target = torch.tensor(target,dtype=torch.float32)
+
+        
+        #Outputs needed values
+        return features_1,features_2,target
+
+
+    #Run functions to obtain data required 
+    training_pairs = get_pairs_tensors(dataset_name)
+
+    val_pairs = get_pairs_tensors(val_dataset_name)
+
+
+    val_dict = get_dict(val_dataset_name)
+
+    test_dict= get_dict(test_dataset_name)
+
+    #Return data so can be passed to run() function
+    return training_pairs, val_pairs, val_dict, test_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Function to obtain data with pairs that have equal relevancy labels
+def get_data_with_equal_pairs(fold : int):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
     dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
@@ -208,20 +436,55 @@ def run(fold : int, ndcg_k : int):
         return features_1,features_2,target
 
 
+    #Run functions to obtain data required 
+    training_pairs = get_pairs_tensors(dataset_name)
 
+    val_pairs = get_pairs_tensors(val_dataset_name)
+
+
+    val_dict = get_dict(val_dataset_name)
+
+    test_dict= get_dict(test_dataset_name)
+
+    #Return data so can be passed to run() function
+    return training_pairs, val_pairs, val_dict, test_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k : int):
     #Defines RankNet model
     class RankNet(nn.Module):
 
         #Initialises layers in the neural network
-        def __init__(self,input_features,hl1,out):
+        def __init__(self,input_features,hl1,hl2,out):
             super().__init__()
             self.fc1 = nn.Linear(input_features,hl1)
-            self.out= nn.Linear(hl1,out)
+            self.fc2= nn.Linear(hl1,hl2)
+            self.out= nn.Linear(hl2,out)
 
 
         #Forward pass to compute output from the input
         def forward(self,x):
             x = torch.relu(self.fc1(x))
+            x = torch.relu(self.fc2(x))
             x = self.out(x)
 
             return x
@@ -232,7 +495,7 @@ def run(fold : int, ndcg_k : int):
 
 
     #Runs operation once to save time
-    data = get_pairs_tensors(dataset_name)
+    data = training_pairs_data
 
 
 
@@ -256,7 +519,7 @@ def run(fold : int, ndcg_k : int):
 
 
     #Runs operation once on validation set to save time
-    val_set = get_pairs_tensors(val_dataset_name)
+    val_set = val_pairs_data
 
 
     #Print time taken to load in
@@ -277,7 +540,7 @@ def run(fold : int, ndcg_k : int):
 
 
     #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
-    model=RankNet(len(features_1[0]),30,1)
+    model=RankNet(len(features_1[0]),5,5,1)
 
     #Defines loss function used for the model
     critierion = nn.BCELoss()
@@ -297,7 +560,7 @@ def run(fold : int, ndcg_k : int):
 
 
     #Create dictionary for validation set
-    val_dict = get_dict(val_dataset_name)
+    val_dict = val_dict_data
 
 
     #Keep track of nDCG values over the course of execution
@@ -510,14 +773,14 @@ def run(fold : int, ndcg_k : int):
     #Load in the stored model that gave the best nDCG score during validation
 
     #Keep same characteristics as model used for training (same layers, neurons)
-    test_model = RankNet(len(features_1[0]),30,1)
+    test_model = RankNet(len(features_1[0]),5,5,1)
 
     #Apply saved weights to model
     test_model.load_state_dict(torch.load("model-weights.pth"))
 
 
     #Load in dictionary that keeps documents associated with each query
-    test_dict = get_dict(test_dataset_name)
+    test_dict = test_dict_data
 
 
     #This stores the nDCG values of all queries
