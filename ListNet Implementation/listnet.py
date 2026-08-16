@@ -463,4 +463,10 @@ def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
     print("Test NDCG: ", test_ndcg)
 
 
+    plt.plot(range(epochs),val_NDCG_tracking)
+    plt.show()
+
     return max_ndcg_val,best_epoch,test_ndcg
+
+fold_data = get_data(1)
+run(fold_data[0],fold_data[1],fold_data[2],fold_data[3],10)
