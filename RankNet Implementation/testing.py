@@ -1,4 +1,4 @@
-from ranknet import get_data_with_equal_pairs,get_data_without_equal_pairs,run
+from ranknet import get_data_with_equal_pairs,get_data_without_equal_pairs,run_ndcg
 import time
 
 
@@ -69,7 +69,7 @@ for val in ndcg_vals:
         avg_epoch = []
         test_ndcg_avg = []
         for _ in range(10):
-            values = run(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
+            values = run_ndcg(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
             vali_ndcg_avg.append(values[0])
             avg_epoch.append(values[1])
             test_ndcg_avg.append(values[2])

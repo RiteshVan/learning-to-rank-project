@@ -468,8 +468,8 @@ def get_data_with_equal_pairs(fold : int):
 
 
 
-
-def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k : int):
+#Function to run main code and get results related to NDCG values
+def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k : int):
     #Defines RankNet model
     class RankNet(nn.Module):
 
@@ -490,17 +490,15 @@ def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k :
             return x
 
 
-    #Find time to load in train dataset
-    train_load_time_start = time.time()
+    
 
 
-    #Runs operation once to save time
+    #Train data stored in one variable
     data = training_pairs_data
 
 
 
-    #Print time taken to load in
-    print("Time taken to get train data: ", time.time() - train_load_time_start)
+    
 
 
 
@@ -518,7 +516,7 @@ def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k :
 
 
 
-    #Runs operation once on validation set to save time
+    #Stores all validation data to one variable
     val_set = val_pairs_data
 
 
@@ -540,7 +538,7 @@ def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k :
 
 
     #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
-    model=RankNet(len(features_1[0]),5,5,1)
+    model = RankNet(len(features_1[0]),5,5,1)
 
     #Defines loss function used for the model
     critierion = nn.BCELoss()
@@ -585,7 +583,6 @@ def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k :
     #Used to check how long training and validation takes
     train_time_start = time.time()
 
-    print(features_1)
 
     #Train loop
     for i in range(epochs):
@@ -877,3 +874,296 @@ def run(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndcg_k :
 
     return max_ndcg_val, best_epoch, test_ndcg
 
+
+
+
+
+#Function used to run main code and get MRR values
+def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
+    #Defines RankNet model
+    class RankNet(nn.Module):
+    
+        #Initialises layers in the neural network
+        def __init__(self,input_features,hl1,hl2,out):
+            super().__init__()
+            self.fc1 = nn.Linear(input_features,hl1)
+            self.fc2= nn.Linear(hl1,hl2)
+            self.out= nn.Linear(hl2,out)
+    
+    
+        #Forward pass to compute output from the input
+        def forward(self,x):
+            x = torch.relu(self.fc1(x))
+            x = torch.relu(self.fc2(x))
+            x = self.out(x)
+    
+            return x
+
+
+    #Train data stored in one variable
+    data = training_pairs_data
+
+
+    #Pairs extracted and stored separately
+    features_1 = data[0]
+    features_2 = data[1]
+
+    #Target values stored
+    target= data[2]
+
+
+    #Stores all validation data to one variable
+    val_set = val_pairs_data
+
+
+
+
+    #Pairs extracted and stored separately
+    val_features_1 = val_set[0]
+    val_features_2 = val_set[1]
+
+
+    #Target values stored
+    val_target = val_set[2]
+
+
+
+
+
+    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
+    model=RankNet(len(features_1[0]),5,5,1)
+
+    #Defines loss function used for the model
+    critierion = nn.BCELoss()
+
+    #Used to update weights based on information obtained
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+
+    #How many times to run loop
+    epochs = 100
+
+    #Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
+    losses = []
+
+    #Keep track ofloss on validation set
+    val_losses = []
+
+
+
+    #Create dictionary for validation set
+    val_dict = val_dict_data
+
+
+
+
+    #   Used in order to save the model that gives the best MRR score
+    #Set to negative one as the MRR values will always be above this
+    max_mrr_val = -1
+
+
+
+    #Check epoch at which best model is seen
+    best_epoch = -1
+
+
+    #Used to check how long training and validation takes
+    train_time_start = time.time()
+
+    avg_mrr_values=[]
+
+    #Train loop
+    for i in range(epochs):
+        #Let model know that coming steps are for training and ensures layers operate as intended
+        model.train()
+
+        #Outputs obtained as docs are input into network
+        output_1 = model.forward(features_1)
+        output_2 = model.forward(features_2)
+
+        #Calculates difference  and its sigmoid value befor inputting into loss function
+        diff = output_1 - output_2 
+        diff = torch.sigmoid(diff)
+
+
+        #Calculate loss and add to array
+        loss = critierion(diff,target)
+
+        losses.append(loss.detach().numpy())
+
+
+    
+
+        #Compute gradients
+        loss.backward()
+
+        #Weight adjustment from optimiser
+        optimiser.step()
+
+        #Prepare gradients for next loop by resetting current ones
+        optimiser.zero_grad()
+
+
+        #Disable model gradient calculations to save memory for inference tasks
+        with torch.no_grad():
+            #Prepares neural network for evaluation tasks
+            model.eval()
+
+
+            #Get outputs from docs from validation set
+            val_output_1 = model.forward(val_features_1)
+            val_output_2 = model.forward(val_features_2)
+
+
+            #Get difference and apply sigmoid to input into loss function
+            val_diff = val_output_1 - val_output_2
+            val_diff = torch.sigmoid(val_diff)
+
+
+            #Calculate loss and store into validation set losses
+            val_loss = critierion(val_diff, val_target)
+
+
+            #Update array to store loss value
+            val_losses.append(val_loss)
+
+
+
+
+
+            #Keep track of MRR values for each query
+            mrr_per_query = []
+
+
+            #Iterate through each query in validation set
+            for query in val_dict.keys():
+
+                #To keep track of actual relevancy labels (to be ordered with a sorted function later)
+                actual_rank_order = []
+
+                #Store tuple 
+                #FORMAT:(actual_label,features,predicted_label)  
+                #Later ordered based on scores given
+                predicted_rank_order=[]
+
+
+                #Iterate through each doc per query
+                for item in val_dict[query]:
+
+                    #Append actual label to list
+                    actual_rank_order.append(item[1])
+
+
+                    #Get predicted score for doc
+                    #Convert to tensor so model can take doc as input
+                    predicted_score = model.forward( torch.tensor(item[0],dtype = torch.float32) )
+
+
+                    #Add tuple to keep track of real label, prediction and document itself
+                    #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
+                    predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+
+
+                actual_rank_order = sorted(actual_rank_order,reverse = True)
+
+                predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[2])
+
+
+                print(actual_rank_order)
+
+                print()
+                print()
+
+                print([x[0] for x in predicted_rank_order ])
+
+
+                top_label_position = -1
+
+                for i in range(len(predicted_rank_order)):
+                    if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+                        top_label_position = i+1
+                        print("Position: ", i+1)
+                        break
+
+                if (actual_rank_order[0] != 0):
+                    print("MRR val for query: ", 1/top_label_position)
+
+                    mrr_per_query.append(1/top_label_position)
+
+
+            avg_epoch_mrr = sum(mrr_per_query)/len(mrr_per_query)
+
+            avg_mrr_values.append(avg_epoch_mrr)
+
+            if avg_epoch_mrr > max_mrr_val:
+                max_mrr_val = avg_epoch_mrr
+                torch.save(model.state_dict(),"model-weights.pth")
+
+
+    
+
+    test_model = RankNet(len(features_1[0]),5,5,1)
+
+    test_model.load_state_dict(torch.load("model-weights.pth"))
+
+    test_dict = test_dict_data
+
+    overall_mrr_to_calc = []
+
+    with torch.no_grad():
+        test_model.eval()
+
+        for query in test_dict.keys():
+
+
+            actual_rank_order = []
+
+            predicted_rank_order = []
+
+
+
+            for doc in test_dict[query]:
+
+                actual_rank_order.append(doc[1])
+
+
+                doc_score = test_model.forward(torch.tensor(doc[0],dtype=torch.float32))
+
+                predicted_rank_order.append((doc_score,doc[1]))
+
+
+
+            actual_rank_order = sorted(actual_rank_order,reverse=True)
+
+
+            predicted_rank_order = sorted(predicted_rank_order,reverse=True, key= lambda x : x[0])
+
+
+            top_label_position = -1
+
+            for i in range(len(predicted_rank_order)):
+                if (predicted_rank_order[i][1] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+                    top_label_position = i+1
+                    break
+
+            if (actual_rank_order[0] != 0):
+                overall_mrr_to_calc.append(1/top_label_position)
+
+
+
+    print("Test MRR: ", sum(overall_mrr_to_calc)/len(overall_mrr_to_calc))
+
+
+
+
+
+
+                                
+data = get_data_without_equal_pairs(1)
+run_mrr(data[0],data[1],data[2],data[3])
+                
+
+
+                
+
+
+        
