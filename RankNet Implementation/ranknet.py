@@ -186,11 +186,8 @@ def get_data_without_equal_pairs(fold : int):
 
                 
                 
-                    else:
-                        if (dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]) not in pairs:
-                        # pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
-                        # target.append([0.5])
-                            continue
+                    else:               
+                        continue
 
 
 
@@ -418,7 +415,7 @@ def get_data_with_equal_pairs(fold : int):
                         if (docs[j][0], docs[i][0]) not in pairs:
                             pairs.append((docs[j][0], docs[i][0]))
                             target.append([0.5])
-                            # continue
+                            
 
 
 
@@ -577,7 +574,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
     #Check epoch at which best model is seen
-    best_epoch=-1
+    best_epoch = -1
 
 
     #Used to check how long training and validation takes
@@ -637,7 +634,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
             #Update array to store loss value
-            val_losses.append(val_loss)
+            val_losses.append(val_loss.detach().numpy())
 
 
 
@@ -937,7 +934,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     critierion = nn.BCELoss()
 
     #Used to update weights based on information obtained
-    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
     #How many times to run loop
     epochs = 100
@@ -1024,7 +1021,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
             #Update array to store loss value
-            val_losses.append(val_loss)
+            val_losses.append(val_loss.detach().numpy())
 
 
 
