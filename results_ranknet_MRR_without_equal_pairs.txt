@@ -1,0 +1,23 @@
+RESULTS:
+
+
+Fold 1 val MRR: 0.5901190086546232
+Fold 1 epochs: 0.6
+Fold 1 test MRR: 0.5953301156777273
+
+Fold 2 val MRR: 0.596698321822706
+Fold 2 epochs: 1.0
+Fold 2 test MRR: 0.5829537595558402
+
+Fold 3 val MRR: 0.5934163670271972
+Fold 3 epochs: 1.8
+Fold 3 test MRR: 0.605335140963001
+
+Fold 4 val MRR: 0.6113170954758848
+Fold 4 epochs: 2.8
+Fold 4 test MRR: 0.5818031241032084
+
+Fold 5 val MRR: 0.5993640971734222
+Fold 5 epochs: 1.5
+Fold 5 test MRR: 0.5787517702388205
+

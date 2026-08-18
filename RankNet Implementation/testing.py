@@ -1,4 +1,4 @@
-from ranknet import get_data_with_equal_pairs,get_data_without_equal_pairs,run_ndcg
+from ranknet import get_data_with_equal_pairs,get_data_without_equal_pairs,run_ndcg, run_mrr
 import time
 
 
@@ -117,7 +117,7 @@ for val in ndcg_vals:
         avg_epoch = []
         test_ndcg_avg = []
         for _ in range(10):
-            values = run(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
+            values = run_ndcg(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
             vali_ndcg_avg.append(values[0])
             avg_epoch.append(values[1])
             test_ndcg_avg.append(values[2])
@@ -157,15 +157,15 @@ for i in range(len(folds_data)):
     avg_epoch = []
     test_mrr_avg = []
     for _ in range(10):
-        values = run(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
+        values = run_mrr(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3])
         vali_mrr_avg.append(values[0])
         avg_epoch.append(values[1])
         test_mrr_avg.append(values[2])
 
 
-    results_file.write("Fold "+ str(i+1) + " val NDCG: " + str(sum(vali_mrr_avg)/len(vali_mrr_avg)) + "\n")
+    results_file.write("Fold "+ str(i+1) + " val MRR: " + str(sum(vali_mrr_avg)/len(vali_mrr_avg)) + "\n")
     results_file.write("Fold "+ str(i+1) + " epochs: " + str(sum(avg_epoch)/len(avg_epoch))+ "\n")
-    results_file.write("Fold "+ str(i+1) + " test NDCG: " + str(sum(test_mrr_avg)/len(test_mrr_avg))+ "\n")
+    results_file.write("Fold "+ str(i+1) + " test MRR: " + str(sum(test_mrr_avg)/len(test_mrr_avg))+ "\n")
     results_file.write("\n")
 
 
@@ -202,15 +202,15 @@ for i in range(len(folds_data)):
     avg_epoch = []
     test_mrr_avg = []
     for _ in range(10):
-        values = run(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3],val)
+        values = run_mrr(folds_data[i][0],folds_data[i][1],folds_data[i][2],folds_data[i][3])
         vali_mrr_avg.append(values[0])
         avg_epoch.append(values[1])
         test_mrr_avg.append(values[2])
 
 
-    results_file.write("Fold "+ str(i+1) + " val NDCG: " + str(sum(vali_mrr_avg)/len(vali_mrr_avg)) + "\n")
+    results_file.write("Fold "+ str(i+1) + " val MRR: " + str(sum(vali_mrr_avg)/len(vali_mrr_avg)) + "\n")
     results_file.write("Fold "+ str(i+1) + " epochs: " + str(sum(avg_epoch)/len(avg_epoch))+ "\n")
-    results_file.write("Fold "+ str(i+1) + " test NDCG: " + str(sum(test_mrr_avg)/len(test_mrr_avg))+ "\n")
+    results_file.write("Fold "+ str(i+1) + " test MRR: " + str(sum(test_mrr_avg)/len(test_mrr_avg))+ "\n")
     results_file.write("\n")
 
 

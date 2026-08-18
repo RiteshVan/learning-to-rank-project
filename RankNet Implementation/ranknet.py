@@ -1096,6 +1096,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
             if avg_epoch_mrr > max_mrr_val:
                 max_mrr_val = avg_epoch_mrr
+                best_epoch = i
                 torch.save(model.state_dict(),"model-weights.pth")
 
 
@@ -1150,12 +1151,13 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-    print("Test MRR: ", sum(overall_mrr_to_calc)/len(overall_mrr_to_calc))
+    test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
+
+    print("Test MRR: ", test_mrr)
+
+
+    return max_mrr_val, best_epoch, test_mrr
 
 
 
 
-
-                                
-data = get_data_without_equal_pairs(1)
-run_mrr(data[0],data[1],data[2],data[3])
