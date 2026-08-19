@@ -1,0 +1,2 @@
+Time taken to load in all data: 0.7139859199523926
+Time taken to get NDCG results: -2350.1382777690887

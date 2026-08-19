@@ -102,7 +102,7 @@ def get_data(fold : int):
 
 
     #Similar to prior function just need to get dictionary for NDCG calculations
-        #Function to organise documents linked to each query
+    #Function to organise documents linked to each query
     def get_dict(dataset_name : str):
 
         #Used to store lines from dataset (corresponds to doc-query pair)
@@ -185,7 +185,7 @@ def get_data(fold : int):
 
 
 
-def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
+def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     #Defines ListNet neural network
     #Follows same structure as RankNet to help make accurate comparisons
     class ListNet(nn.Module):
@@ -208,7 +208,9 @@ def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
             return x
 
-    model = ListNet(46,5,5,1)
+    #The length of input is equal to number of features in document
+    #Two hidden layers of size 5 and output of size 1
+    model = ListNet(len(training_input[0][0][0]),5,5,1)
 
 
     training_input = training_input
@@ -238,6 +240,7 @@ def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
     max_ndcg_val=-1
 
+    best_epoch = -1
 
     for i in range(epochs):
         train_loss_avg=[]
@@ -383,7 +386,7 @@ def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
 
 
-    test_model = ListNet(46,5,5,1)
+    test_model =ListNet(len(training_input[0][0][0]),5,5,1)
 
 
     test_model.load_state_dict(torch.load("model-weights.pth"))
@@ -463,10 +466,251 @@ def run(training_input,validation_input,val_dict,test_dict,ndcg_k):
     print("Test NDCG: ", test_ndcg)
 
 
-    plt.plot(range(epochs),val_NDCG_tracking)
-    plt.show()
+    
 
     return max_ndcg_val,best_epoch,test_ndcg
 
-fold_data = get_data(1)
-run(fold_data[0],fold_data[1],fold_data[2],fold_data[3],10)
+
+
+
+
+
+
+
+def run_mrr(training_input,validation_input,val_dict,test_dict):
+    #Defines ListNet neural network
+    #Follows same structure as RankNet to help make accurate comparisons
+    class ListNet(nn.Module):
+
+        #Initialise layers of the network
+        def __init__(self,input_features,hl1,hl2,out):
+            super().__init__()
+            self.fc1 = nn.Linear(input_features,hl1)
+            self.fc2 = nn.Linear(hl1,hl2)
+            self.out = nn.Linear(hl2,out)
+
+
+
+        #Forward function to define how input is computed 
+        # and activation functions used to reach output
+        def forward(self,x):
+            x = torch.relu(self.fc1(x))
+            x = torch.relu(self.fc2(x))
+            x= self.out(x)
+
+            return x
+
+    #The length of input is equal to number of features in document
+    #Two hidden layers of size 5 and output of size 1
+    model = ListNet(len(training_input[0][0][0]),5,5,1)
+
+
+
+    training_input = training_input
+
+
+    validation_input = validation_input
+
+
+
+
+    val_dict = val_dict
+
+
+
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+
+    epochs = 100
+
+
+    train_losses=[]
+
+    val_losses=[]
+
+
+    max_mrr_val = -1
+
+
+    best_epoch = -1
+
+    avg_mrr_values = []
+
+    for i in range(epochs):
+        train_loss_avg=[]
+        for j in range(len(training_input)):
+            model.train()
+
+            documents = training_input[j][0]
+
+            targets = training_input[j][1]
+
+
+            scores = model.forward(documents)
+
+            scores = torch.flatten(scores)
+
+            scores = torch.softmax(scores,-1)
+
+            targets = torch.softmax(targets,-1)
+
+
+
+            loss = -torch.sum(targets * torch.log2(scores))
+
+
+            train_loss_avg.append(loss.detach().numpy())
+
+            loss.backward()
+
+            optimiser.step()
+
+
+            optimiser.zero_grad()
+
+        train_losses.append(sum(train_loss_avg)/len(train_loss_avg))
+
+
+        val_loss_avg=[]
+        with torch.no_grad():
+            model.eval()
+            for k in range(len(validation_input)):
+
+                documents = validation_input[k][0]
+
+                targets = validation_input[k][1]
+
+                scores = model.forward(documents)
+
+                scores = torch.flatten(scores)
+
+                scores=torch.softmax(scores,-1)
+
+
+                targets = torch.softmax(targets,-1)
+
+                val_loss =  -torch.sum(targets * torch.log2(scores))
+
+                val_loss_avg.append(val_loss.detach().numpy())
+
+            val_losses.append(sum(val_loss_avg)/len(val_loss_avg)) 
+
+
+            mrr_per_query = []
+
+            for query in val_dict.keys():
+
+
+                actual_rank_order = []         
+
+
+                predicted_rank_order = []         
+
+
+
+                for item in val_dict[query]:
+
+
+                    actual_rank_order.append(item[1])
+
+
+                    predicted_score = model.forward(torch.tensor(item[0],dtype = torch.float32))
+
+                    predicted_rank_order.append((item[1],predicted_score))
+
+
+
+
+                actual_rank_order = sorted(actual_rank_order,reverse = True)
+
+
+                predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[1])
+
+
+
+                top_label_position = -1
+
+
+
+                for i in range(len(predicted_score)):
+                    if (predicted_score[i] == actual_rank_order[0]) and (actual_rank_order != 0):
+                        top_label_position = i+1
+
+                        break
+
+
+                if actual_rank_order[0] != 0:
+                    mrr_per_query.append(1/top_label_position)
+
+
+            avg_epoch_mrr = sum(mrr_per_query)/len(mrr_per_query)
+
+            avg_mrr_values.append(avg_epoch_mrr)
+
+            if avg_epoch_mrr > max_mrr_val:
+                max_mrr_val = avg_epoch_mrr
+
+                best_epoch = i
+
+                torch.save(model.state_dict(),"model-weights.pth")
+
+
+
+
+    test_model = ListNet(len(training_input[0][0][0]),5,5,1)
+
+
+    test_model.load_state_dict(torch.load("model-weights.pth"))
+
+
+    test_dict = test_dict
+
+
+    overall_mrr_to_calc = []
+
+
+
+    with torch.no_grad():
+        test_model.eval()
+
+        for query in test_dict.keys():
+
+            actual_rank_order = []
+
+            predicted_rank_order = []
+
+
+            for item in test_dict[query]:
+                actual_rank_order.append(item[1])
+
+                predicted_score = model.forward(torch.tensor(item[0],dtype = torch.float32))
+
+
+                predicted_rank_order.append((item[1],predicted_score))
+
+
+            actual_rank_order = sorted(actual_rank_order,reverse=True)
+
+            predicted_rank_order = sorted(predicted_rank_order,reverse=True, key= lambda x : x[1])
+
+
+            top_label_position = -1
+
+
+            for i in range(len(predicted_rank_order)):
+                if (predicted_rank_order[1] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+                    top_label_position = i + 1
+
+                    break
+
+
+
+            if (actual_rank_order[0] != 0):
+                overall_mrr_to_calc.append(1/top_label_position)
+
+
+
+        test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
+
+        print("Test MRR: ", test_mrr)
+
+        return max_mrr_val, best_epoch, test_mrr
