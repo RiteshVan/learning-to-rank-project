@@ -631,14 +631,14 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-                for i in range(len(predicted_score)):
+                for i in range(len(predicted_rank_order)):
                     if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
                         top_label_position = i+1
 
                         break
 
 
-                if (actual_rank_order[0] != 0):
+                if (actual_rank_order[0] != 0) and (top_label_position > 0):
                     mrr_per_query.append(1/top_label_position)
 
 
