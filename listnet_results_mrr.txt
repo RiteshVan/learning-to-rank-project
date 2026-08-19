@@ -1,19 +1,27 @@
 LISTNET MRR RESULTS:
 
 
-Fold 1 val MRR: -1.0
-Fold 1 epochs: -1.0
-Fold 1 test MRR: -1.0
+Fold 1 val MRR: 0.008333333333333333
+Fold 1 epochs: 0.0
+Fold 1 test MRR: 0.6311082733015506
 
-Fold 2 val MRR: -1.0
-Fold 2 epochs: -1.0
-Fold 2 test MRR: -1.0
+Fold 2 val MRR: -0.030476190476190473
+Fold 2 epochs: 0.0
+Fold 2 test MRR: 0.5905624233505768
 
-Fold 3 val MRR: -1.0
-Fold 3 epochs: -1.0
-Fold 3 test MRR: -1.0
+Fold 3 val MRR: -0.047619047619047616
+Fold 3 epochs: 0.0
+Fold 3 test MRR: 0.6182432090066466
 
-Fold 4 val MRR: -1.0
-Fold 4 epochs: -1.0
-Fold 4 test MRR: -1.0
+Fold 4 val MRR: 0.0
+Fold 4 epochs: 0.0
+Fold 4 test MRR: 0.6304388007581055
+
+Fold 5 val MRR: 0.006557377049180328
+Fold 5 epochs: 0.0
+Fold 5 test MRR: 0.6355903087389125
+
+AVG fold val MRR: -0.012640905542544887
+AVG fold epochs: 0.0
+AVG fold test MRR: 0.6211886030311584
 

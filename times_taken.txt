@@ -1,2 +1,4 @@
-Time taken to load in all data: 0.7139859199523926
-Time taken to get NDCG results: -2350.1382777690887
+Time taken to load in all data: 0.6905908584594727
+Time taken to get NDCG results: -2310.3628158569336
+Time taken to get MRR results: -484.1494128704071
+Time take for whole execution: -2795.2028300762177
