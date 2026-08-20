@@ -1,5 +1,6 @@
 from ranknet import get_data_with_equal_pairs,get_data_without_equal_pairs,run_ndcg, run_mrr
 import time
+import numpy as np
 
 
 # results_file = open("results.txt" , "w")
@@ -122,6 +123,9 @@ for val in ndcg_vals:
     results_file.write("AVD FOLD test NDCG: " + str(sum(fold_avg_test_ndcg)/ len(fold_avg_test_ndcg)) + "\n" )
     results_file.write("\n")
 
+    results_file.write("ST. DEVIATION val NDCG: " + str(np.std(fold_avg_vali_ndcg)) + "\n")
+    results_file.write("ST. DEVIATION epochs: " + str(np.std(fold_avg_epoch)) + "\n")
+    results_file.write("ST. DEVIATION test NDCG: " + str(np.std(fold_avg_test_ndcg)) + "\n")
 
 results_file.close()
 
@@ -187,6 +191,11 @@ for val in ndcg_vals:
     results_file.write("\n")
 
 
+    results_file.write("ST. DEVIATION val NDCG: " + str(np.std(fold_avg_vali_ndcg)) + "\n")
+    results_file.write("ST. DEVIATION epochs: " + str(np.std(fold_avg_epoch)) + "\n")
+    results_file.write("ST. DEVIATION test NDCG: " + str(np.std(fold_avg_test_ndcg)) + "\n")
+
+
 results_file.close()
 
 
@@ -236,6 +245,10 @@ results_file.write("AVG FOLD epochs: " + str(sum(fold_avg_epoch)/ len(fold_avg_e
 results_file.write("AVD FOLD test MRR: " + str(sum(fold_avg_test_mrr)/ len(fold_avg_test_mrr)) + "\n" )
 results_file.write("\n")
 
+
+results_file.write("ST. DEVIATION val MRR: " + str(np.std(fold_avg_vali_mrr)) + "\n")
+results_file.write("ST. DEVIATION epochs: " + str(np.std(fold_avg_epoch)) + "\n")
+results_file.write("ST. DEVIATION test MRR: " + str(np.std(fold_avg_test_mrr)) + "\n")
 
 
 results_file.close()
@@ -292,6 +305,12 @@ results_file.write("AVG FOLD val MRR: " + str(sum(fold_avg_vali_mrr)/ len(fold_a
 results_file.write("AVG FOLD epochs: " + str(sum(fold_avg_epoch)/ len(fold_avg_epoch) ) + "\n" )
 results_file.write("AVD FOLD test MRR: " + str(sum(fold_avg_test_mrr)/ len(fold_avg_test_mrr)) + "\n" )
 results_file.write("\n")
+
+
+results_file.write("ST. DEVIATION val MRR: " + str(np.std(fold_avg_vali_mrr)) + "\n")
+results_file.write("ST. DEVIATION epochs: " + str(np.std(fold_avg_epoch)) + "\n")
+results_file.write("ST. DEVIATION test MRR: " + str(np.std(fold_avg_test_mrr)) + "\n")
+
 
 
 results_file.close()
