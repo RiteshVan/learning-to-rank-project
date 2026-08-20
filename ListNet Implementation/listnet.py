@@ -37,7 +37,7 @@ def get_data(fold : int):
         #Arrays to store  information about query-doc pairs
         relevancy_labels = []
         queries = [] #Query IDs
-        features = [] #Array of arrays each of which representing a document
+        features = [] #Array of arrays each of which represent a document
 
 
 
@@ -204,7 +204,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
         def forward(self,x):
             x = torch.relu(self.fc1(x))
             x = torch.relu(self.fc2(x))
-            x= self.out(x)
+            x = self.out(x)
 
             return x
 
@@ -238,7 +238,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     val_NDCG_tracking =[]
 
 
-    max_ndcg_val=-1
+    max_ndcg_val = -1
 
     best_epoch = -1
 
@@ -386,7 +386,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
 
 
-    test_model =ListNet(len(training_input[0][0][0]),5,5,1)
+    test_model = ListNet(len(training_input[0][0][0]),5,5,1)
 
 
     test_model.load_state_dict(torch.load("model-weights.pth"))
@@ -411,7 +411,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
                 actual_rank_order.append(item[1])
 
-                predicted_score = model.forward(torch.tensor(item[0],dtype=torch.float32))
+                predicted_score = test_model.forward(torch.tensor(item[0],dtype=torch.float32))
 
                 predicted_rank_order.append((predicted_score,item[1]))
 
@@ -457,7 +457,8 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
                 overall_ndcg_to_calc.append(dcg/idcg)
 
 
-
+    #For this test dataset there is at least one query with at least one document allocated to it 
+    #so no need to check if denominator is zero
     test_ndcg = sum(overall_ndcg_to_calc)/len(overall_ndcg_to_calc)
 
 
@@ -496,7 +497,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
         def forward(self,x):
             x = torch.relu(self.fc1(x))
             x = torch.relu(self.fc2(x))
-            x= self.out(x)
+            x = self.out(x)
 
             return x
 
@@ -631,9 +632,9 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-                for i in range(len(predicted_rank_order)):
-                    if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
-                        top_label_position = i+1
+                for l in range(len(predicted_rank_order)):
+                    if (predicted_rank_order[l][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+                        top_label_position = l + 1
 
                         break
 
@@ -682,7 +683,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
             for item in test_dict[query]:
                 actual_rank_order.append(item[1])
 
-                predicted_score = model.forward(torch.tensor(item[0],dtype = torch.float32))
+                predicted_score = test_model.forward(torch.tensor(item[0],dtype = torch.float32))
 
 
                 predicted_rank_order.append((item[1],predicted_score))
@@ -704,11 +705,12 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-            if (actual_rank_order[0] != 0):
+            if (actual_rank_order[0] != 0) and (top_label_position > 0): 
                 overall_mrr_to_calc.append(1/top_label_position)
 
 
-
+        #For this test dataset there is at least one query with at least one document allocated to it 
+        #so no need to check if denominator is zero
         test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
 
         print("Test MRR: ", test_mrr)
