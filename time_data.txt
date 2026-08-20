@@ -1,5 +1,0 @@
-RESULTS:
-
-Time taken to load in data without equal pairs: 77.20622181892395
-Time taken to load in data with equal pairs: 1306.7951118946075
-Time taken to run all tests: 3868.3776128292084

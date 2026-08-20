@@ -934,7 +934,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     critierion = nn.BCELoss()
 
     #Used to update weights based on information obtained
-    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
 
     #How many times to run loop
     epochs = 100
