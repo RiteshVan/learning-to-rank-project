@@ -6,6 +6,119 @@ import matplotlib.pyplot as plt
 import math
 import time
 
+
+
+
+
+#Function to obtain dictionaries from dataset per fold
+def get_dictionaries(fold : int):
+    #MQ2008 Dataset from LETOR 4.0
+    #Path to dataset being used
+    dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
+
+
+
+    #Path to validation set
+    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/vali.txt"
+
+
+    #Path to test set
+    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/test.txt"
+
+    #Function to get dictionary to iterate through specific docs from each query
+    # #In particular created to help with calculating nDCG during validation
+    # #Adapted from get_pairs_tensors() function
+    def get_dict(dataset_name : str, data_limit : int = None):
+        #To store data entries (which consist of query IDs, features and relevancy labels)
+        array = []
+
+
+    #Open file and iterate through and add to array
+        with open(dataset_name, "r") as f:
+            #Variable to count number of lines read
+            i = 0
+
+            for line in f:
+                #Add line to array
+                array.append(line)
+                #Update variable to indicate one more line read
+                i=i+1
+
+
+                #Used to set limit on number of lines read to not overload resources
+                if data_limit != None:
+                    if i >= data_limit:
+                        #Exit loop once enough lines read
+                        break
+
+
+
+        #Arrays to store required information about query-doc pairs
+        relevancy_labels = []
+        queries = [] #Query IDs stored
+        features = [] #Array of arrays, with each entry representing a document
+
+
+
+
+        for val in array:
+            #First char of each entry is relevancy label, so extracted, converted to int and stored
+            relevancy_labels.append(int(val[0]))
+
+            #Finds substring that matched "qid:" prefix
+            if re.search(r"qid:([0-9]+)",val):
+                #Only append group from regular expression that contains qid
+                queries.append(re.search(r"qid:([0-9]+)",val).group(1))
+
+                #Find all features in entry and only extracts numerical terms that refer to feature values
+                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+
+                #Convert all data extracted here to floats for future operations
+                features.append(list( map(float,feature_vals)))
+
+
+        #Create dictionary where keys are query IDs and value per key is 
+        # list of tuples where each tuple contains a linked document's features and its relevancy to query
+        dictionary_query_docs = {}
+
+
+        #Iterate through all prior arrays at once to extract required information to store in dictionary
+        for label,qid,f in zip(relevancy_labels,queries,features):
+            #If query not already a key in dictionary, create new entry
+            if qid not in dictionary_query_docs:
+                dictionary_query_docs[qid] = [(f,label)]
+    
+            #If query already present, add tuple to list
+            else:
+                dictionary_query_docs[qid].append((f,label))
+
+    
+        #Function returns dictionary
+        return dictionary_query_docs
+
+    #Gets all dictionaries for a fold
+    return get_dict(dataset_name),  get_dict(val_dataset_name),  get_dict(test_dataset_name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Function to obtain data with no pairs that have equal relevancy labels
 def get_data_without_equal_pairs(fold : int):
     #MQ2008 Dataset from LETOR 4.0
@@ -1185,3 +1298,25 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
+
+
+
+
+
+
+
+data = get_dictionaries(1)
+
+num_queries_above_ten_docs = 0
+
+num_feature_vals_above_zero = 0
+
+for dict in data:
+    for query in dict.keys():
+        if len(dict[query]) > 10:
+            num_queries_above_ten_docs += 1 
+
+
+
+
+print(num_queries_above_ten_docs)
