@@ -1076,13 +1076,13 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
                 #Iterate through the ordering from predicted scores
-                for i in range(len(predicted_rank_order)):
+                for l in range(len(predicted_rank_order)):
 
                     #Checks if item at index i is the most relevant doc to a query and if relevancy label is not zero 
-                    if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+                    if (predicted_rank_order[l][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
 
                         #Note position (add one as to get actual position not index)
-                        top_label_position = i+1
+                        top_label_position = l + 1
 
                         #Break to ensure the loop does not check lower ranked position
                         # as there may be other docs with same top relevancy label but are ranked lower
