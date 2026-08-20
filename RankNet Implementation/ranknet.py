@@ -966,6 +966,8 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     #Used to check how long training and validation takes
     train_time_start = time.time()
 
+
+    #To track how MRR values change over time
     avg_mrr_values=[]
 
     #Train loop
@@ -1060,82 +1062,110 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                     predicted_rank_order.append((item[1],item[0],float(predicted_score)))
 
 
+                #Order real labels to get true best possible order
                 actual_rank_order = sorted(actual_rank_order,reverse = True)
 
+                #Order true labels based on scores from neural net
                 predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[2])
 
 
-                print(actual_rank_order)
-
-                print()
-                print()
-
-                print([x[0] for x in predicted_rank_order ])
 
 
+                #In place to track position of most relevant doc in list
                 top_label_position = -1
 
-                for i in range(len(predicted_rank_order)):
-                    if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
-                        top_label_position = i+1
-                        print("Position: ", i+1)
-                        break
 
+                #Iterate through the ordering from predicted scores
+                for i in range(len(predicted_rank_order)):
+
+                    #Checks if item at index i is the most relevant doc to a query and if relevancy label is not zero 
+                    if (predicted_rank_order[i][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
+
+                        #Note position (add one as to get actual position not index)
+                        top_label_position = i+1
+
+                        #Break to ensure the loop does not check lower ranked position
+                        # as there may be other docs with same top relevancy label but are ranked lower
+                        # Only need topmost ranked item
+                        break   
+
+                #If top label is zero then do not consider the query for calculation
                 if (actual_rank_order[0] != 0):
                     print("MRR val for query: ", 1/top_label_position)
 
                     mrr_per_query.append(1/top_label_position)
 
-
+            #Get overall average MRR considering all queries at particular epoch
             avg_epoch_mrr = sum(mrr_per_query)/len(mrr_per_query)
 
+            #Add to list to track how MRR changes
             avg_mrr_values.append(avg_epoch_mrr)
 
+
+            #If MRR value is highest seen so far, store model weights to be used for testing
             if avg_epoch_mrr > max_mrr_val:
+                #Update new maximum MRR value 
                 max_mrr_val = avg_epoch_mrr
+
+                #Track epoch at which best model weights are obtained
                 best_epoch = i
+
+                #Save model weights so they can be loaded later
                 torch.save(model.state_dict(),"model-weights.pth")
 
 
     
-
+    #Create test model that is structurally identical to one from prior
     test_model = RankNet(len(features_1[0]),5,5,1)
 
+
+    #Load in best model weights from prior
     test_model.load_state_dict(torch.load("model-weights.pth"))
 
+    #Load in data from test dataset
     test_dict = test_dict_data
 
+
+    #Used to track MRRs for all queries to get average at end
     overall_mrr_to_calc = []
 
+    #Disable gradient computations
     with torch.no_grad():
+        #Set model to evaluation mode
         test_model.eval()
 
+
+        #Iterate through keys (queries) in dictionary
         for query in test_dict.keys():
 
-
+            #Used to keep track of orders of labels
             actual_rank_order = []
 
             predicted_rank_order = []
 
 
-
+            #Iterates through docs that belong to single query
             for doc in test_dict[query]:
 
+
+                #Get labels of docs and add to array
                 actual_rank_order.append(doc[1])
 
 
+                #Get model score for document and append to array
                 doc_score = test_model.forward(torch.tensor(doc[0],dtype=torch.float32))
 
                 predicted_rank_order.append((doc_score,doc[1]))
 
 
-
+            #Order list of relevancy labels
             actual_rank_order = sorted(actual_rank_order,reverse=True)
 
-
+            #Order list of relevancy labels but based on scores from model
             predicted_rank_order = sorted(predicted_rank_order,reverse=True, key= lambda x : x[0])
 
 
+            #MRR process similar to that from validation step
             top_label_position = -1
 
             for i in range(len(predicted_rank_order)):
@@ -1147,14 +1177,11 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 overall_mrr_to_calc.append(1/top_label_position)
 
 
-
+    #Calculate overall MRR on test set and print
     test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
 
     print("Test MRR: ", test_mrr)
 
 
+    #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
-
-
-
-
