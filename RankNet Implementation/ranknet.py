@@ -621,8 +621,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
 
-    #Find time to load in val dataset
-    val_load_time_start = time.time()
+    
 
 
 
@@ -630,8 +629,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     val_set = val_pairs_data
 
 
-    #Print time taken to load in
-    print("Time taken to get val data: ", time.time() - val_load_time_start)
+    
 
 
 
@@ -783,7 +781,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
                     #Add tuple to keep track of real label, prediction and document itself
                     #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
-                    predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+                    predicted_rank_order.append((item[1],float(predicted_score)))
 
 
                 #Sort labels in order to find ideal-DCG
@@ -1298,25 +1296,3 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
-
-
-
-
-
-
-
-data = get_dictionaries(1)
-
-num_queries_above_ten_docs = 0
-
-num_feature_vals_above_zero = 0
-
-for dict in data:
-    for query in dict.keys():
-        if len(dict[query]) > 10:
-            num_queries_above_ten_docs += 1 
-
-
-
-
-print(num_queries_above_ten_docs)
