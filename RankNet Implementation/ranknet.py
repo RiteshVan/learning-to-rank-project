@@ -287,15 +287,15 @@ def get_data_without_equal_pairs(fold : int):
                 for j in range(i+1, len(dictionary_query_docs[qid])):
                     #Condition ensures more relevant doc first in tuple
                     if dictionary_query_docs[qid][i][1] > dictionary_query_docs[qid][j][1]:
-                        if (dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]) not in pairs:
-                            pairs.append((dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]))
-                            target.append([1])
+                        
+                        pairs.append((dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]))
+                        target.append([1])
 
 
                     elif dictionary_query_docs[qid][i][1] < dictionary_query_docs[qid][j][1]:
-                        if (dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]) not in pairs:
-                            pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
-                            target.append([1])
+                        
+                        pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
+                        target.append([1])
 
                 
                 
@@ -512,22 +512,22 @@ def get_data_with_equal_pairs(fold : int):
                 for j in range(i+1, len(docs)):
                     #Condition ensures more relevant doc first in tuple
                     if docs[i][1] > docs[j][1]:
-                        if (docs[i][0], docs[j][0]) not in pairs:
-                            pairs.append((docs[i][0], docs[j][0]))
-                            target.append([1])
+                        
+                        pairs.append((docs[i][0], docs[j][0]))
+                        target.append([1])
 
 
                     elif docs[i][1] < docs[j][1]:
-                        if (docs[i][0], docs[j][0]) not in pairs:
-                            pairs.append((docs[j][0], docs[i][0]))
-                            target.append([1])
+                        
+                        pairs.append((docs[j][0], docs[i][0]))
+                        target.append([1])
 
                 
                 
                     else:
-                        if (docs[j][0], docs[i][0]) not in pairs:
-                            pairs.append((docs[j][0], docs[i][0]))
-                            target.append([0.5])
+                        
+                        pairs.append((docs[j][0], docs[i][0]))
+                        target.append([0.5])
                             
 
 
