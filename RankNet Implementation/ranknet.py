@@ -652,7 +652,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     critierion = nn.BCELoss()
 
     #Used to update weights based on information obtained
-    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
 
     #How many times to run loop
     epochs = 100
@@ -791,7 +791,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
                 #Order based predicted score
                 #Only take top 10 values for NCDG calculation
-                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[2])[:ndcg_k]
+                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[1])[:ndcg_k]
 
 
                 #Keep track of overall values
@@ -836,13 +836,13 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 #Checks in case query has no relevant docs connected to it
                 if iDCG != 0 :
                     #Calculation to find nDCG and add to array
-                    nDCG = dcg /iDCG
+                    nDCG = dcg / iDCG
 
                     nDCG_per_query.append(nDCG)
 
 
             #Append to array overall nDCG val for this iteration
-            nDCG_overall = sum(nDCG_per_query)/len(nDCG_per_query)
+            nDCG_overall = sum(nDCG_per_query) / len(nDCG_per_query)
             avg_nDCG_vals.append(nDCG_overall)
 
 
@@ -851,7 +851,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 max_ndcg_val = nDCG_overall
 
                 #Keep track of when this new max NDCG value is seen
-                best_epoch=i
+                best_epoch = i
 
                 #Save only model weights so can be recerated easily for testing
                 torch.save(model.state_dict(), "model-weights.pth")
@@ -878,7 +878,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     #Load in the stored model that gave the best nDCG score during validation
 
     #Keep same characteristics as model used for training (same layers, neurons)
-    test_model = RankNet(len(features_1[0]),5,5,1)
+    test_model = RankNet(len(features_1[0]), 5, 5, 1)
 
     #Apply saved weights to model
     test_model.load_state_dict(torch.load("model-weights.pth"))
@@ -967,18 +967,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     print("Test NDCG: ", test_ndcg)
 
 
-    #Graph to show how loss changes based on iterations
-    # plt.ylabel("Losses")
-    # plt.xlabel("Epochs")
-    # plt.plot(range(epochs),losses,'r-',label="Training set losses")
-    # plt.plot(range(epochs),val_losses,'b-',label="Validation set losses")
-    # plt.legend()
-    # plt.show()
-
-
-    # plt.plot(range(epochs),avg_nDCG_vals)
-    # plt.show()
-
+    
 
     return max_ndcg_val, best_epoch, test_ndcg
 
@@ -1039,7 +1028,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
     #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
-    model=RankNet(len(features_1[0]),5,5,1)
+    model=RankNet(len(features_1[0]), 5, 5, 1)
 
     #Defines loss function used for the model
     critierion = nn.BCELoss()
@@ -1227,7 +1216,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     
     #Create test model that is structurally identical to one from prior
-    test_model = RankNet(len(features_1[0]),5,5,1)
+    test_model = RankNet(len(features_1[0]), 5, 5, 1)
 
 
     #Load in best model weights from prior
@@ -1281,15 +1270,15 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
             for i in range(len(predicted_rank_order)):
                 if (predicted_rank_order[i][1] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
-                    top_label_position = i+1
+                    top_label_position = i + 1
                     break
 
             if (actual_rank_order[0] != 0):
-                overall_mrr_to_calc.append(1/top_label_position)
+                overall_mrr_to_calc.append(1 / top_label_position)
 
 
     #Calculate overall MRR on test set and print
-    test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
+    test_mrr = sum(overall_mrr_to_calc) / len(overall_mrr_to_calc)
 
     print("Test MRR: ", test_mrr)
 
