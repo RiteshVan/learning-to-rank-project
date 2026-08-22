@@ -4,18 +4,19 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import os
 
 def get_data(fold : int):
     #Path to training dataset
-    train_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold) + "/train.txt"
+    train_dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold) + "/train.txt"
 
 
     #Path to validation dataset
-    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold) + "/vali.txt"
+    val_dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold) + "/vali.txt"
 
 
     #Path to test dataset
-    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold) + "/test.txt"
+    test_dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold) + "/test.txt"
 
 
 
@@ -716,3 +717,8 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
         print("Test MRR: ", test_mrr)
 
         return max_mrr_val, best_epoch, test_mrr
+
+
+data = len(get_data(1))
+
+print(data)
