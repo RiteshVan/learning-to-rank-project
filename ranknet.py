@@ -5,77 +5,69 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import time
+import os
 
 
 #Function to obtain data with no pairs that have equal relevancy labels
 def get_data_without_equal_pairs(fold : int):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
-    dataset_name = "/MQ2008/Fold" +  str(fold)  + "/train.txt"
+    dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
 
     #Path to validation set
-    val_dataset_name = "/MQ2008/Fold"+ str(fold) +"/vali.txt"
+    val_dataset_name =  os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/vali.txt"
 
 
     #Path to test set
-    test_dataset_name = "/MQ2008/Fold"+ str(fold) +"/test.txt"
+    test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
-    # #In particular created to help with calculating nDCG during validation
-    # #Adapted from get_pairs_tensors() function
-    def get_dict(dataset_name : str, data_limit : int = None):
-        #To store data entries (which consist of query IDs, features and relevancy labels)
+    #In particular created to help with calculating nDCG and MRR during validation
+    #Adapted from get_pairs_tensors() function
+    def get_dict(dataset_name : str):
+        #To store data entries (which consist of relevancy labels, query IDs and features)
         array = []
 
 
-    #Open file and iterate through and add to array
+        #Open file and iterate through and add to array
         with open(dataset_name, "r") as f:
-            #Variable to count number of lines read
-            i = 0
-
             for line in f:
                 #Add line to array
                 array.append(line)
-                #Update variable to indicate one more line read
-                i=i+1
-
-
-                #Used to set limit on number of lines read to not overload resources
-                if data_limit != None:
-                    if i >= data_limit:
-                        #Exit loop once enough lines read
-                        break
+                
+                
 
 
 
         #Arrays to store required information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Stores document relevancy labels
         queries = [] #Query IDs stored
         features = [] #Array of arrays, with each entry representing a document
 
 
 
-
+        #Iterates through each data entry
         for val in array:
             #First char of each entry is relevancy label, so extracted, converted to int and stored
             relevancy_labels.append(int(val[0]))
 
-            #Finds substring that matched "qid:" prefix
+            #Finds substring that matches "qid:" prefix
             if re.search(r"qid:([0-9]+)",val):
                 #Only append group from regular expression that contains qid
+                #Queries can be left as strings as not used for computations
                 queries.append(re.search(r"qid:([0-9]+)",val).group(1))
 
                 #Find all features in entry and only extracts numerical terms that refer to feature values
-                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+                feature_vals  =re.findall(r"[0-9]+:([^ ]*)" , val) 
 
                 #Convert all data extracted here to floats for future operations
                 features.append(list( map(float,feature_vals)))
 
 
-        #Create dictionary where keys are query IDs and value per key is 
-        # list of tuples where each tuple contains a linked document's features and its relevancy to query
+        #Create dictionary where keys are query IDs and key values is 
+        #lists of tuples where each tuple contains a linked document's features and its relevancy to query
         dictionary_query_docs = {}
 
 
@@ -83,6 +75,7 @@ def get_data_without_equal_pairs(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -101,49 +94,37 @@ def get_data_without_equal_pairs(fold : int):
 
 
     #Function to get pairs
-    def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
+    def get_pairs_tensors(dataset_name : str):
         #To store data entries (which consist of query IDs, features and relevancy labels)
         array=[]
 
 
         #Open file and iterate through and add to array
         with open(dataset_name,"r") as f:
-            #Variable to count number of lines read
-            i = 0
-
             for line in f:
                 #Add line to array
                 array.append(line)
-                #Update variable to indicate one more line read
-                i = i+1
-
-
-                #Used to set limit on number of lines read to not overload resources
-                if data_limit != None:
-                    if i>=data_limit:
-                        #Exit loop once enough lines read
-                        break
-
+            
 
 
         #Arrays to store required information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Stores document relevancy labels
         queries = [] #Query IDs stored
         features = [] #Array of arrays, with each entry representing a document
 
 
-
+        #Iterate through each data entry
         for val in array:
             #First char of each entry is relevancy label, so extracted, converted to int and stored
             relevancy_labels.append(int(val[0]))
 
-            #Finds substring that matched "qid:" prefix
+            #Finds substring that matches "qid:" prefix
             if re.search(r"qid:([0-9]+)",val):
                 #Only append group from regular expression that contains qid
                 queries.append(re.search(r"qid:([0-9]+)",val).group(1))
 
                 #Find all features in entry and only extracts numerical terms that refer to feature values
-                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+                feature_vals = re.findall(r"[0-9]+:([^ ]*)" , val) 
 
                 #Convert all data extracted here to floats for future operations
                 features.append(list( map(float,feature_vals)))
@@ -157,6 +138,7 @@ def get_data_without_equal_pairs(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -174,19 +156,17 @@ def get_data_without_equal_pairs(fold : int):
             for i in range(len(dictionary_query_docs[qid])):
                 for j in range(i+1, len(dictionary_query_docs[qid])):
                     #Condition ensures more relevant doc first in tuple
-                    if dictionary_query_docs[qid][i][1] > dictionary_query_docs[qid][j][1]:
-                        
+                    if dictionary_query_docs[qid][i][1] > dictionary_query_docs[qid][j][1]:     
                         pairs.append((dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]))
                         target.append([1])
 
-
+                    #Condition checks and ensure less relevant document placed second in tuple
                     elif dictionary_query_docs[qid][i][1] < dictionary_query_docs[qid][j][1]:
-                        
                         pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
                         target.append([1])
 
                 
-                
+                    #Skip pairs that have equal relevancy
                     else:               
                         continue
 
@@ -197,7 +177,7 @@ def get_data_without_equal_pairs(fold : int):
         features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
-        # print(target)
+        
         #Targets are equal to one as the more relevant doc is one the left side, so target is one
         target = torch.tensor(target,dtype=torch.float32)
 
@@ -236,53 +216,45 @@ def get_data_without_equal_pairs(fold : int):
 def get_data_with_equal_pairs(fold : int):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
-    dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
+    dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
 
     #Path to validation set
-    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/vali.txt"
+    val_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/vali.txt"
 
 
     #Path to test set
-    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/test.txt"
+    test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
     # #In particular created to help with calculating nDCG during validation
     # #Adapted from get_pairs_tensors() function
-    def get_dict(dataset_name : str, data_limit : int = None):
+    def get_dict(dataset_name : str):
         #To store data entries (which consist of query IDs, features and relevancy labels)
         array = []
 
 
     #Open file and iterate through and add to array
         with open(dataset_name, "r") as f:
-            #Variable to count number of lines read
-            i = 0
 
             for line in f:
                 #Add line to array
                 array.append(line)
-                #Update variable to indicate one more line read
-                i=i+1
+                
 
-
-                #Used to set limit on number of lines read to not overload resources
-                if data_limit != None:
-                    if i >= data_limit:
-                        #Exit loop once enough lines read
-                        break
+                
 
 
 
         #Arrays to store required information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Stores document relevancy labels
         queries = [] #Query IDs stored
         features = [] #Array of arrays, with each entry representing a document
 
 
 
-
+        #Iterate through data entries
         for val in array:
             #First char of each entry is relevancy label, so extracted, converted to int and stored
             relevancy_labels.append(int(val[0]))
@@ -308,6 +280,7 @@ def get_data_with_equal_pairs(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -326,28 +299,17 @@ def get_data_with_equal_pairs(fold : int):
 
 
     #Function to get pairs
-    def get_pairs_tensors(dataset_name : str, data_limit  : int = None):
+    def get_pairs_tensors(dataset_name : str):
         #To store data entries (which consist of query IDs, features and relevancy labels)
         array=[]
 
 
         #Open file and iterate through and add to array
         with open(dataset_name,"r") as f:
-            #Variable to count number of lines read
-            i = 0
-
             for line in f:
                 #Add line to array
                 array.append(line)
-                #Update variable to indicate one more line read
-                i = i+1
-
-
-                #Used to set limit on number of lines read to not overload resources
-                if data_limit != None:
-                    if i>=data_limit:
-                        #Exit loop once enough lines read
-                        break
+                
 
 
 
@@ -357,7 +319,7 @@ def get_data_with_equal_pairs(fold : int):
         features = [] #Array of arrays, with each entry representing a document
 
 
-
+        #Iterate through data entries
         for val in array:
             #First char of each entry is relevancy label, so extracted, converted to int and stored
             relevancy_labels.append(int(val[0]))
@@ -382,6 +344,7 @@ def get_data_with_equal_pairs(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -1173,3 +1136,13 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
+
+
+
+
+data = get_data_without_equal_pairs(1)[0][0]
+data_equal = get_data_with_equal_pairs(1)[0][0]
+
+print(len(data))
+
+print(len(data_equal))
