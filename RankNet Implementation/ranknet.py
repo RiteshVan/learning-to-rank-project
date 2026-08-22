@@ -11,16 +11,16 @@ import time
 def get_data_without_equal_pairs(fold : int):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
-    dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold" +  str(fold)  + "/train.txt"
+    dataset_name = "MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
 
     #Path to validation set
-    val_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/vali.txt"
+    val_dataset_name = "MQ2008/Fold"+ str(fold) +"/vali.txt"
 
 
     #Path to test set
-    test_dataset_name = "/Users/ritesh/Desktop/project-extra/MQ2008/Fold"+ str(fold) +"/test.txt"
+    test_dataset_name = "MQ2008/Fold"+ str(fold) +"/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
     # #In particular created to help with calculating nDCG during validation
