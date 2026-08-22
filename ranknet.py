@@ -9,7 +9,7 @@ import os
 
 
 #Function to obtain data with no pairs that have equal relevancy labels
-def get_data_without_equal_pairs(fold : int):
+def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
     dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
@@ -82,6 +82,12 @@ def get_data_without_equal_pairs(fold : int):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+
+
+        if doc_count > 0:
+            for query in dictionary_query_docs.copy():
+                if len(dictionary_query_docs[query]) <= doc_count:
+                    del dictionary_query_docs[query]
     
         #Function returns dictionary
         return dictionary_query_docs
@@ -145,6 +151,11 @@ def get_data_without_equal_pairs(fold : int):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+        if doc_count > 0:
+            for query in dictionary_query_docs.copy():
+                if len(dictionary_query_docs[query]) <= doc_count:
+                    del dictionary_query_docs[query]
+
         #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
         pairs=[]
 
@@ -152,6 +163,7 @@ def get_data_without_equal_pairs(fold : int):
 
         #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
         for qid,docs in dictionary_query_docs.items():
+            
             #Iterate through documents
             for i in range(len(docs)):
                 for j in range(i+1, len(docs)):
@@ -169,7 +181,7 @@ def get_data_without_equal_pairs(fold : int):
                     #Skip pairs that have equal relevancy
                     else:               
                         continue
-
+           
 
 
         #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
@@ -196,8 +208,10 @@ def get_data_without_equal_pairs(fold : int):
 
     test_dict= get_dict(test_dataset_name)
 
+    train_dict = get_dict(dataset_name)
+
     #Return data so can be passed to run() function
-    return training_pairs, val_pairs, val_dict, test_dict
+    return training_pairs, val_pairs, val_dict, test_dict,train_dict
 
 
 
@@ -213,7 +227,7 @@ def get_data_without_equal_pairs(fold : int):
 
 
 #Function to obtain data with pairs that have equal relevancy labels
-def get_data_with_equal_pairs(fold : int):
+def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
     #MQ2008 Dataset from LETOR 4.0
     #Path to dataset being used
     dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
@@ -287,6 +301,12 @@ def get_data_with_equal_pairs(fold : int):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+
+        if doc_count > 0:
+            for query in dictionary_query_docs.copy():
+                if len(dictionary_query_docs[query]) <= doc_count:
+                    del dictionary_query_docs[query]
+
     
         #Function returns dictionary
         return dictionary_query_docs
@@ -351,6 +371,11 @@ def get_data_with_equal_pairs(fold : int):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+        if doc_count > 0:
+            for query in dictionary_query_docs.copy():
+                if len(dictionary_query_docs[query]) <= doc_count:
+                    del dictionary_query_docs[query]
+
         #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
         pairs=[]
 
@@ -407,8 +432,13 @@ def get_data_with_equal_pairs(fold : int):
 
     test_dict= get_dict(test_dataset_name)
 
+
+    train_dict = get_dict(dataset_name)
+
+    
+
     #Return data so can be passed to run() function
-    return training_pairs, val_pairs, val_dict, test_dict
+    return training_pairs, val_pairs, val_dict, test_dict, train_dict
 
 
 
@@ -1149,9 +1179,21 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-data = get_data_without_equal_pairs(1)
-data_equal = get_data_with_equal_pairs(1)
 
-print(run_ndcg(data_equal[0],data_equal[1],data_equal[2],data_equal[3],50))
 
-print(len(data_equal[0][0]))
+
+
+data = get_data_with_equal_pairs(5,10)[2:]
+
+
+count = 0
+
+
+for dict in data:
+    for query in dict:
+        count+=1
+
+
+print("Count:",count)
+
+
