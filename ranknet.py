@@ -367,14 +367,14 @@ def get_data_with_equal_pairs(fold : int):
                         pairs.append((docs[i][0], docs[j][0]))
                         target.append([1])
 
-
+                    #Checks to ensure less relevant doc placed second in tuple
                     elif docs[i][1] < docs[j][1]:
                         
                         pairs.append((docs[j][0], docs[i][0]))
                         target.append([1])
 
                 
-                
+                    #In case of matches in relevancy labels append and add target to reflect equality
                     else:
                         
                         pairs.append((docs[j][0], docs[i][0]))
@@ -529,18 +529,17 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
 
-    #   Used in order to save the model that gives the best nDCG score
+    #Used in order to save the model that gives the best nDCG score
     #Set to negative one as the nDCG values will always be above this
     max_ndcg_val = -1
 
 
 
-    #Check epoch at which best model is seen
+    #To check epoch at which best model is seen
     best_epoch = -1
 
 
-    #Used to check how long training and validation takes
-    train_time_start = time.time()
+    
 
 
     #Train loop
@@ -560,6 +559,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
         #Calculate loss and add to array
         loss = critierion(diff,target)
 
+        #Store training loss
         losses.append(loss.detach().numpy())
 
 
@@ -613,7 +613,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 actual_rank_order = []
 
                 #Store tuple 
-                #FORMAT:(actual_label,features,predicted_label)  
+                #FORMAT:(actual_label,predicted_score)  
                 #Later ordered based on scores given
                 predicted_rank_order=[]
 
@@ -630,21 +630,22 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                     predicted_score = model.forward( torch.tensor(item[0],dtype=torch.float32) )
 
 
-                    #Add tuple to keep track of real label, prediction and document itself
+                    #Add tuple to keep track of real label and prediction 
                     #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
                     predicted_rank_order.append((item[1],float(predicted_score)))
 
 
                 #Sort labels in order to find ideal-DCG
-                #Only take top 10 values for NCDG calculation
+                #Only take top k values for NCDG calculation
                 actual_rank_order = sorted(actual_rank_order,reverse=True)[:ndcg_k]
 
 
                 #Order based predicted score
-                #Only take top 10 values for NCDG calculation
-                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[1])[:ndcg_k]
+                #Only take top k values for NCDG calculation
+                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key = lambda x : x[1])[:ndcg_k]
 
 
+                
                 #Keep track of overall values
                 iDCG = 0
 
@@ -664,7 +665,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
                     #Iterate to prepare for next position term
-                    denominator_val +=1
+                    denominator_val += 1
 
 
                 #Reset for next loop
@@ -709,7 +710,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
             
         
 
-    #Outputs best NDCG value seen
+    #Outputs best NDCG value seen, and when it was seen
     print("Best Validation NDCG value obtained is: ", max_ndcg_val)
     print("Value seen after epoch ", best_epoch)
 
@@ -717,11 +718,10 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     #Empty lines printed for visual clarity
     print()
     print()
-    print()
 
 
-    #Outputs time taken for training and validation process to complete
-    print("Time taken for validation and training to be completed (in seconds): " , time.time() - train_time_start)
+
+    
 
 
     #Testing phase
@@ -767,7 +767,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 #Get document relevancy score from the model
                 doc_score = test_model.forward(torch.tensor(doc[0] ,dtype=torch.float32))
 
-                #Append as tuple format (pred_relevancy,actual relevancy) 
+                #Append as tuple format (pred_relevancy,actual_relevancy) 
                 # This so array can be sorted by predicted order, but NDCG calculations 
                 # can be done on actual labels
                 pred_order.append((doc_score,doc[1]))
@@ -782,7 +782,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
             #Calculations here done with similar operations to those in validation step
-            iDCG =0
+            iDCG = 0
 
             denominator_val=2
             for val in actual_order:
@@ -801,7 +801,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
                 dcg += calc
 
-                denominator_val+=1
+                denominator_val += 1
 
             #This is done to check in case some queries have no relevant labels 
             # so must be skipped from final calculation
@@ -879,7 +879,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
     #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
-    model=RankNet(len(features_1[0]), 5, 5, 1)
+    model = RankNet(len(features_1[0]), 5, 5, 1)
 
     #Defines loss function used for the model
     critierion = nn.BCELoss()
@@ -904,7 +904,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-    #   Used in order to save the model that gives the best MRR score
+    #Used in order to save the model that gives the best MRR score
     #Set to negative one as the MRR values will always be above this
     max_mrr_val = -1
 
@@ -914,8 +914,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     best_epoch = -1
 
 
-    #Used to check how long training and validation takes
-    train_time_start = time.time()
+    
 
 
     #To track how MRR values change over time
@@ -991,7 +990,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 actual_rank_order = []
 
                 #Store tuple 
-                #FORMAT:(actual_label,features,predicted_label)  
+                #FORMAT:(actual_label,predicted_label)  
                 #Later ordered based on scores given
                 predicted_rank_order=[]
 
@@ -1005,19 +1004,19 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
                     #Get predicted score for doc
                     #Convert to tensor so model can take doc as input
-                    predicted_score = model.forward( torch.tensor(item[0],dtype = torch.float32) )
+                    predicted_score = model.forward(torch.tensor(item[0],dtype = torch.float32))
 
 
                     #Add tuple to keep track of real label, prediction and document itself
                     #Important to keep tuple format for ordering based on predicted scores and making calculations based on actual labels 
-                    predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+                    predicted_rank_order.append((item[1],float(predicted_score)))
 
 
                 #Order real labels to get true best possible order
                 actual_rank_order = sorted(actual_rank_order,reverse = True)
 
                 #Order true labels based on scores from neural net
-                predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[2])
+                predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[1])
 
 
 
@@ -1042,8 +1041,6 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
                 #If top label is zero then do not consider the query for calculation
                 if (actual_rank_order[0] != 0):
-                    print("MRR val for query: ", 1/top_label_position)
-
                     mrr_per_query.append(1/top_label_position)
 
             #Get overall average MRR considering all queries at particular epoch
@@ -1065,6 +1062,13 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 torch.save(model.state_dict(),"model-weights.pth")
 
 
+
+    #Print results obtained
+    print("Best MRR val seen: ", max_mrr_val )
+    print("Epoch when seen: ", best_epoch)
+
+
+    #Testing phase
     
     #Create test model that is structurally identical to one from prior
     test_model = RankNet(len(features_1[0]), 5, 5, 1)
@@ -1119,11 +1123,15 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
             #MRR process similar to that from validation step
             top_label_position = -1
 
+            #Check though predicted ranking to where most relevant doc is placed
             for i in range(len(predicted_rank_order)):
                 if (predicted_rank_order[i][1] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
                     top_label_position = i + 1
+
+                    #Break to ensure only top label is written to variable
                     break
 
+            #Only perform calculation if doc relevancy label above 0
             if (actual_rank_order[0] != 0):
                 overall_mrr_to_calc.append(1 / top_label_position)
 
@@ -1131,6 +1139,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     #Calculate overall MRR on test set and print
     test_mrr = sum(overall_mrr_to_calc) / len(overall_mrr_to_calc)
 
+    #Print overall test MRR
     print("Test MRR: ", test_mrr)
 
 
@@ -1140,9 +1149,9 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-data = get_data_without_equal_pairs(1)[0][0]
-data_equal = get_data_with_equal_pairs(1)[0][0]
+data = get_data_without_equal_pairs(1)
+data_equal = get_data_with_equal_pairs(1)
 
-print(len(data))
+print(run_ndcg(data_equal[0],data_equal[1],data_equal[2],data_equal[3],50))
 
-print(len(data_equal))
+print(len(data_equal[0][0]))
