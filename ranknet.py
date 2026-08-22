@@ -151,18 +151,18 @@ def get_data_without_equal_pairs(fold : int):
         target=[]
 
         #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
-        for qid in dictionary_query_docs.keys():
+        for qid,docs in dictionary_query_docs.items():
             #Iterate through documents
-            for i in range(len(dictionary_query_docs[qid])):
-                for j in range(i+1, len(dictionary_query_docs[qid])):
+            for i in range(len(docs)):
+                for j in range(i+1, len(docs)):
                     #Condition ensures more relevant doc first in tuple
-                    if dictionary_query_docs[qid][i][1] > dictionary_query_docs[qid][j][1]:     
-                        pairs.append((dictionary_query_docs[qid][i][0], dictionary_query_docs[qid][j][0]))
+                    if docs[i][1] > docs[j][1]:     
+                        pairs.append((docs[i][0], docs[j][0]))
                         target.append([1])
 
                     #Condition checks and ensure less relevant document placed second in tuple
-                    elif dictionary_query_docs[qid][i][1] < dictionary_query_docs[qid][j][1]:
-                        pairs.append((dictionary_query_docs[qid][j][0], dictionary_query_docs[qid][i][0]))
+                    elif docs[i][1] < docs[j][1]:
+                        pairs.append((docs[j][0], docs[i][0]))
                         target.append([1])
 
                 
