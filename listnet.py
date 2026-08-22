@@ -36,7 +36,7 @@ def get_data(fold : int):
 
 
         #Arrays to store  information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Relevance labels of documents
         queries = [] #Query IDs
         features = [] #Array of arrays each of which represent a document
 
@@ -67,6 +67,7 @@ def get_data(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -74,26 +75,32 @@ def get_data(fold : int):
                 dictionary_query_docs[qid].append((f,label))
 
     
-
+        #To store items to be input to neural network
         network_input=[]
 
-
+        #Iterate through queries in dictionary
         for query in dictionary_query_docs.keys():
+
+            #Arrays to store values on per query basis
             query_docs=[]
             query_targets=[]
 
+            #Iterate through document and label in query list 
             for document,target in dictionary_query_docs[query]:
+                #Add required values to arrays
                 query_docs.append(document)
                 query_targets.append(target)
 
-
+            #Convert to tensors
             query_docs = torch.tensor(query_docs,dtype=torch.float32)
 
             query_targets = torch.tensor(query_targets,dtype=torch.float32)
 
+
+            #Each tuple appended related to all information for one query
             network_input.append((query_docs,query_targets))
 
-
+        #Return network input
         return network_input
 
 
@@ -150,6 +157,7 @@ def get_data(fold : int):
         for label,qid,f in zip(relevancy_labels,queries,features):
             #If query not already a key in dictionary, create new entry
             if qid not in dictionary_query_docs:
+                #Initialise list
                 dictionary_query_docs[qid] = [(f,label)]
     
             #If query already present, add tuple to list
@@ -161,7 +169,7 @@ def get_data(fold : int):
         return dictionary_query_docs
 
     
-
+    #Obtain required data
     training_input = get_network_input(train_dataset_name)
 
 
@@ -185,7 +193,7 @@ def get_data(fold : int):
 
 
 
-
+#Function run to obtain NDCG values
 def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     #Defines ListNet neural network
     #Follows same structure as RankNet to help make accurate comparisons
@@ -214,19 +222,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     model = ListNet(len(training_input[0][0][0]),5,5,1)
 
 
-    training_input = training_input
-
-
-    validation_input = validation_input
-
-
-
-
-    val_dict = val_dict
-
-
-
-    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
     epochs = 100
 
@@ -392,7 +388,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
     test_model.load_state_dict(torch.load("model-weights.pth"))
 
-    test_dict = test_dict
+    
 
     overall_ndcg_to_calc = []
 
@@ -508,15 +504,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-    training_input = training_input
-
-
-    validation_input = validation_input
-
-
-
-
-    val_dict = val_dict
+    
 
 
 
@@ -664,7 +652,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
     test_model.load_state_dict(torch.load("model-weights.pth"))
 
 
-    test_dict = test_dict
+    
 
 
     overall_mrr_to_calc = []
@@ -718,7 +706,3 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
         return max_mrr_val, best_epoch, test_mrr
 
-
-data = len(get_data(1))
-
-print(data)
