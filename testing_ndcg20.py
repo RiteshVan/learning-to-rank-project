@@ -1,5 +1,4 @@
 from ranknet import get_data_without_equal_pairs,get_data_with_equal_pairs,run_ndcg
-import time
 import numpy as np
 
 
