@@ -1,5 +1,6 @@
 from listnet import run_ndcg,get_data,run_mrr
 import time
+import numpy as np
 
 
 time_results = open("times_taken.txt","w")
@@ -70,7 +71,15 @@ for val in ndcg_vals:
     results_file.write("AVG fold epochs: " + str(sum(avg_fold_epoch)/len(avg_fold_epoch)) + '\n' )
     results_file.write("AVG fold test NDCG: " + str(sum(avg_fold__test_ndcg)/len(avg_fold__test_ndcg)) + '\n' )
     results_file.write("\n")
-        
+
+
+    results_file.write("ST. DEVIATION vali NDCG: " + str(np.std(avg_fold__vali_ndcg)) + "\n")
+    results_file.write("ST. DEVIATION epochs: " + str( np.std(avg_fold_epoch) ) + "\n")
+    results_file.write("ST. DEVIATION test NDCG: " + str(np.std(avg_fold__test_ndcg)) + "\n")
+    results_file.write("\n")
+
+
+    
 
 
 results_file.close()
@@ -78,7 +87,7 @@ results_file.close()
 
 
 
-time_results.write("Time taken to get NDCG results: " + str(ndcg_calculations_time - time.time())  + "\n")
+time_results.write("Time taken to get NDCG results: " + str(time.time() - ndcg_calculations_time )  + "\n")
 
 
 
@@ -127,14 +136,21 @@ results_file.write("AVG fold test MRR: " + str(sum(avg_fold__test_mrr)/len(avg_f
 results_file.write("\n")
 
 
+
+
+results_file.write("ST. DEVIATION val MRR: " + str(np.std(avg_fold__vali_mrr)) + "\n")
+results_file.write("ST. DEVIATION epochs: " + str(np.std(avg_fold_epoch)) + "\n")
+results_file.write("ST. DEVIATION test MRR: " + str(np.std(avg_fold__test_mrr)) + "\n" )
+results_file.write("\n")
+
 results_file.close()
 
 
 
-time_results.write("Time taken to get MRR results: " + str(mrr_calculations_time - time.time()) + "\n")
+time_results.write("Time taken to get MRR results: " + str(time.time() - mrr_calculations_time ) + "\n")
 
 
-time_results.write("Time take for whole execution: " + str( execution_start_time - time.time())  + "\n")
+time_results.write("Time take for whole execution: " + str(time.time() - execution_start_time)  + "\n")
 
 
 time_results.close()

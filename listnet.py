@@ -6,7 +6,11 @@ import numpy as np
 import math
 import os
 
+#Function used to obtain all data needed for ListNet algorithm
+#Contains subfunctions so that data for neural network and metrics can be obtained in one step
 def get_data(fold : int):
+
+    #Uses current directory string to get datasets
     #Path to training dataset
     train_dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold) + "/train.txt"
 
@@ -126,7 +130,7 @@ def get_data(fold : int):
 
 
         #Arrays to store  information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Store relevancy labels of documents
         queries = [] #Query IDs
         features = [] #Array of arrays each of which representing a document
 
@@ -165,7 +169,7 @@ def get_data(fold : int):
                 dictionary_query_docs[qid].append((f,label))
 
 
-
+        #Return dictionary
         return dictionary_query_docs
 
     
@@ -222,152 +226,213 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     model = ListNet(len(training_input[0][0][0]),5,5,1)
 
 
+    #Used to update the model weights based on loss
     optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
+
+    #Sets number of times to run loop
     epochs = 100
 
-
+    #To keep track of training losses
     train_losses=[]
 
+
+    #To keep track of validation losses
     val_losses=[]
 
-
+    #Track how NDCG changes
     val_NDCG_tracking =[]
 
-
+    #Track the best validation NDCG value to choose test weights
     max_ndcg_val = -1
 
+    #To track iteration at which best NDCG value weights are seen
     best_epoch = -1
 
-    for i in range(epochs):
-        train_loss_avg=[]
-        for j in range(len(training_input)):
-            model.train()
 
+    for i in range(epochs):
+        #Get average loss for epoch based on loss found for each query's data
+        train_loss_avg=[]
+
+        #Set model to train mode so its layers operate as intended
+        model.train()
+
+        #Iterate through items query by query
+        for j in range(len(training_input)):
+            
+            #Extract documents list linked to query
             documents = training_input[j][0]
 
+
+            #Store target values for documents
             targets = training_input[j][1]
 
-
+            #Get model scores for all documents
             scores = model.forward(documents)
 
+
+            #Ensure all scores kept in one dimension tensor array
             scores = torch.flatten(scores)
 
-            scores = torch.softmax(scores,-1)
+            #Calculate top-1 probability over targets and predicted scores
+            scores = torch.softmax(scores,-1)  
 
             targets = torch.softmax(targets,-1)
 
 
-
+            #Input into loss function
             loss = -torch.sum(targets * torch.log2(scores))
 
-
+            #Add to array to track losses and take average for epoch at end of loop
             train_loss_avg.append(loss.detach().numpy())
 
+
+            #Compute gradients
             loss.backward()
 
+
+            #Adjust parameters based on gradients
             optimiser.step()
 
-
+            #Clear gradients for next epoch
             optimiser.zero_grad()
 
+
+        #Get average losses among all queries to get average epoch train loss
         train_losses.append(sum(train_loss_avg)/len(train_loss_avg))
 
-
+        #To find validation loss at epoch
         val_loss_avg=[]
+
+        #Disable gradient tracking to save resources
         with torch.no_grad():
+            #Setup neural network for evaluation tasks
             model.eval()
+
+            #Following is same process as training to get val losses
+            #Iterate through tuples related to each query
             for k in range(len(validation_input)):
 
+                #Extract documents list linked to query
                 documents = validation_input[k][0]
 
+                #Store target values for documents
                 targets = validation_input[k][1]
 
+
+                #Get model scored for documents
                 scores = model.forward(documents)
 
+
+                #Store scores for all documents in one dimension tensor array 
                 scores = torch.flatten(scores)
 
-                scores=torch.softmax(scores,-1)
 
+                #Calculate top-1 probability for targets and scores
+                scores = torch.softmax(scores,-1)
 
                 targets = torch.softmax(targets,-1)
 
+                #Calculate loss and append to list to take average
                 val_loss =  -torch.sum(targets * torch.log2(scores))
 
                 val_loss_avg.append(val_loss.detach().numpy())
 
+            #Add average val epoch loss to array to track
             val_losses.append(sum(val_loss_avg)/len(val_loss_avg))
 
 
 
-
+            #Track NDCG value obtained per query
             ndcg_per_query = []
 
+            #Iterate through dictionary query-wise
             for query in val_dict.keys():
 
-
+                #Setup arrays to track real and predicted order
+                #Uses sorted() function after they are populated
                 actual_rank_order = []
 
 
                 predicted_rank_order = []
 
 
-
+                #Iterate through each (doc,label) tuple per query list
                 for item in val_dict[query]:
+                    #Add relevancy label to list
                     actual_rank_order.append(item[1])
 
-
+                    #Use document features to get score for document
                     predicted_score = model.forward(torch.tensor(item[0],dtype=torch.float32))
 
-                    predicted_rank_order.append((item[1],item[0],float(predicted_score)))
+
+                    #Add predicted score to list (label,model_score)
+                    predicted_rank_order.append((item[1],float(predicted_score)))
 
 
-
+                #Order list
                 actual_rank_order = sorted(actual_rank_order,reverse=True)[:ndcg_k]
 
-                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[2])[:ndcg_k]
+                #Order list based on ordering of scores from model
+                predicted_rank_order = sorted(predicted_rank_order,reverse=True,key= lambda x : x[1])[:ndcg_k]
 
 
+                #Track DCG and IDCG to calculate NDCG later
                 idcg = 0
 
                 dcg = 0
 
 
-                denominator_val =2
+                #Set start denominator to 2 then iterate for each position down the list (discounting)
+                denominator_val = 2
 
 
+                #Go through actual rankings first to get IDCG
                 for val in actual_rank_order:
+                    #Get score for item at given position
                     calc = ((2**val) - 1)/math.log2(denominator_val)
 
-
+                    #Update overall idcg
                     idcg += calc
 
+                    #Iterate to find score for next item down
                     denominator_val += 1
 
 
+                #Set denominator to 2 and iterate for each position going down the list (discounting)
+                denominator_val = 2
 
-                denominator_val=2
 
+                #Go through labels of documents based on the order the model placed them
                 for val in predicted_rank_order:
+                    #Get score for item at given position
                     calc = ((2**val[0])-1)/math.log2(denominator_val)
 
+
+                    #Update overall DCG score
                     dcg+=calc
 
+
+                    #Iterate to setup to calculate next position down
                     denominator_val+=1
 
-
+                #To prevent division by zero
+                #If query has no docs associated to it, skip
                 if idcg != 0:
                     ndcg = dcg/idcg
 
 
                     ndcg_per_query.append(ndcg)
 
-
+            #Take average across queries
             ndcg_overall = sum(ndcg_per_query)/len(ndcg_per_query)
 
+            #Track how NDCG changes over iterations
             val_NDCG_tracking.append(ndcg_overall)
 
-
+            #If NDCG val is highest seen so far, update max_ndcg_val variable
+            #Track epoch
+            #Store model weights
             if max_ndcg_val < ndcg_overall:
                 max_ndcg_val = ndcg_overall
 
@@ -382,20 +447,22 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
 
 
-
+    #Recreate model same as model used for training and validation steps
     test_model = ListNet(len(training_input[0][0][0]),5,5,1)
 
-
+    #Load in model weights that were saved prior
     test_model.load_state_dict(torch.load("model-weights.pth"))
 
     
-
+    #Track ndcg for all queries to get average at end
     overall_ndcg_to_calc = []
 
-
+    #Disable gradient tracking to save resources
     with torch.no_grad():
+        #Set model layers to prepare for evaluation steps
         test_model.eval()
 
+        #Process here is same as for validation
         for query in test_dict.keys():
 
 
@@ -458,7 +525,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     #so no need to check if denominator is zero
     test_ndcg = sum(overall_ndcg_to_calc)/len(overall_ndcg_to_calc)
 
-
+    #Print obtained values
     print("Best Validation NDCG: ", max_ndcg_val)
     print("Best epoch: ", best_epoch)
     print("Test NDCG: ", test_ndcg)
@@ -474,7 +541,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
 
 
-
+#Code here similar to prior function, only change is metric used
 def run_mrr(training_input,validation_input,val_dict,test_dict):
     #Defines ListNet neural network
     #Follows same structure as RankNet to help make accurate comparisons
@@ -508,7 +575,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-    optimiser = torch.optim.Adam(model.parameters(),lr=0.001)
+    optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
     epochs = 100
 
