@@ -773,6 +773,13 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     overall_nDCG_to_calc = []
 
 
+
+    #Used as part of experiment to find out number of queries 
+    #where doc with label 1 is placed over doc with label 2
+    occurrences_one_above_two = 0
+
+
+
     #Prep for task with no gradient calculations
     with torch.no_grad():
         test_model.eval()
@@ -810,6 +817,22 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
             #Key used to sort by first term in tuple 
             pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:ndcg_k]
 
+
+            #Checks of docs of relevancy 1 and 2 associated to a query
+            if (1 in actual_order) and (2 in actual_order):
+                #Iterates through labels in predicted ordering
+                for i in range(len(pred_order)):
+                    for j in range(i,len(pred_order)):
+                        #If found that label 1 above label 2, increment variable and break
+                        if (pred_order[i][1] ==1) and (pred_order[j][1] ==2):
+                            occurrences_one_above_two += 1
+                            
+                            
+                            break
+
+                    #Break here also as experiment only regards cases where 
+                    #doc with label 1 placed at top
+                    break         
 
             #Calculations here done with similar operations to those in validation step
             iDCG = 0
@@ -849,8 +872,8 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
     
-
-    return max_ndcg_val, best_epoch, test_ndcg
+    
+    return max_ndcg_val, best_epoch, test_ndcg, occurrences_one_above_two
 
 
 
@@ -1175,25 +1198,3 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
-
-
-
-
-
-
-
-
-data = get_data_with_equal_pairs(5,10)[2:]
-
-
-count = 0
-
-
-for dict in data:
-    for query in dict:
-        count+=1
-
-
-print("Count:",count)
-
-
