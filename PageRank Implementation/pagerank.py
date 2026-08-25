@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import time
+import os
 
 #Initialise directed graph to visualise connections for PageRank
 g = nx.DiGraph()
@@ -36,7 +37,7 @@ g = nx.DiGraph()
 
 #Dataset from this website URL: https://www.kaggle.com/datasets/linhbngo/hollins-dataset 
 #Load in dataset
-file = "/Users/ritesh/Desktop/VSCODE-project/final-project/PageRank Implementation/hollins.dat"
+file = os.getcwd() + "/PageRank Implementation/hollins.dat"
 
 #Array used to store node connections as list of tuples
 array = []
