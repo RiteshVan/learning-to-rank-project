@@ -541,6 +541,9 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     print("Test NDCG: ", test_ndcg)
 
 
+    plt.plot(range(epochs),val_NDCG_tracking)
+    plt.show()
+
     
 
     return max_ndcg_val,best_epoch,test_ndcg
@@ -783,3 +786,9 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
         return max_mrr_val, best_epoch, test_mrr
     
+
+
+data = get_data(1)
+
+
+run_ndcg(data[0],data[1],data[2],data[3],10)
