@@ -171,6 +171,11 @@ def get_data(fold : int,doc_count : int = 0):
                 dictionary_query_docs[qid].append((f,label))
 
 
+        for query in dictionary_query_docs.copy().keys():
+            if len(dictionary_query_docs[query]) <= doc_count:
+                del dictionary_query_docs[query]
+
+
         #Return dictionary
         return dictionary_query_docs
 
@@ -188,7 +193,7 @@ def get_data(fold : int,doc_count : int = 0):
 
     network_input_len = len(training_input) + len(validation_input) + len(get_network_input(test_dataset_name))
     
-
+    print("Dict size: ",len(val_dict.keys()) + len(test_dict.keys()) + len(get_dict(train_dataset_name).keys()) )
     return training_input,validation_input,val_dict,test_dict,network_input_len
 
 
@@ -778,9 +783,3 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
         return max_mrr_val, best_epoch, test_mrr
     
-
-data = get_data(1,30)
-
-print(data[4])
-
-run_ndcg(data[0],data[1],data[2],data[3],20)
