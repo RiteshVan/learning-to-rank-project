@@ -8,7 +8,7 @@ import os
 
 #Function used to obtain all data needed for ListNet algorithm
 #Contains subfunctions so that data for neural network and metrics can be obtained in one step
-def get_data(fold : int):
+def get_data(fold : int,doc_count : int = 0):
 
     #Uses current directory string to get datasets
     #Path to training dataset
@@ -89,20 +89,22 @@ def get_data(fold : int):
             query_docs=[]
             query_targets=[]
 
-            #Iterate through document and label in query list 
-            for document,target in dictionary_query_docs[query]:
-                #Add required values to arrays
-                query_docs.append(document)
-                query_targets.append(target)
+            if len(dictionary_query_docs[query]) > doc_count:
 
-            #Convert to tensors
-            query_docs = torch.tensor(query_docs,dtype=torch.float32)
+                #Iterate through document and label in query list 
+                for document,target in dictionary_query_docs[query]:
+                    #Add required values to arrays
+                    query_docs.append(document)
+                    query_targets.append(target)
 
-            query_targets = torch.tensor(query_targets,dtype=torch.float32)
+                #Convert to tensors
+                query_docs = torch.tensor(query_docs,dtype=torch.float32)
+
+                query_targets = torch.tensor(query_targets,dtype=torch.float32)
 
 
-            #Each tuple appended related to all information for one query
-            network_input.append((query_docs,query_targets))
+                #Each tuple appended related to all information for one query
+                network_input.append((query_docs,query_targets))
 
         #Return network input
         return network_input
@@ -184,7 +186,10 @@ def get_data(fold : int):
     test_dict = get_dict(test_dataset_name)
 
 
-    return training_input,validation_input,val_dict,test_dict
+    network_input_len = len(training_input) + len(validation_input) + len(get_network_input(test_dataset_name))
+    
+
+    return training_input,validation_input,val_dict,test_dict,network_input_len
 
 
 
@@ -772,4 +777,10 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
         print("Test MRR: ", test_mrr)
 
         return max_mrr_val, best_epoch, test_mrr
+    
 
+data = get_data(1,30)
+
+print(data[4])
+
+run_ndcg(data[0],data[1],data[2],data[3],20)
