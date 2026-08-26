@@ -736,7 +736,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 best_epoch = i
 
                 #Save only model weights so can be recerated easily for testing
-                torch.save(model.state_dict(), "model-weights.pth")
+                torch.save(model.state_dict(), "ndcg-weights.pth")
             
         
 
@@ -762,7 +762,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     test_model = RankNet(len(features_1[0]), 5, 5, 1)
 
     #Apply saved weights to model
-    test_model.load_state_dict(torch.load("model-weights.pth"))
+    test_model.load_state_dict(torch.load("ndcg-weights.pth"))
 
 
     #Load in dictionary that keeps documents associated with each query
@@ -871,8 +871,8 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     print("Test NDCG: ", test_ndcg)
 
 
-    plt.plot(range(epochs),avg_nDCG_vals)
-    plt.show()
+    # plt.plot(range(epochs),avg_nDCG_vals)
+    # plt.show()
     
     return max_ndcg_val, best_epoch, test_ndcg, occurrences_one_above_two
 
@@ -1113,7 +1113,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 best_epoch = i
 
                 #Save model weights so they can be loaded later
-                torch.save(model.state_dict(),"model-weights.pth")
+                torch.save(model.state_dict(),"mrr-weights.pth")
 
 
 
@@ -1129,7 +1129,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
     #Load in best model weights from prior
-    test_model.load_state_dict(torch.load("model-weights.pth"))
+    test_model.load_state_dict(torch.load("mrr-weights.pth"))
 
     #Load in data from test dataset
     test_dict = test_dict_data
@@ -1203,7 +1203,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-data = get_data_without_equal_pairs(1)
+# data = get_data_without_equal_pairs(1)
 
 
-run_ndcg(data[0],data[1],data[2],data[3],10)
+# run_ndcg(data[0],data[1],data[2],data[3],10)
