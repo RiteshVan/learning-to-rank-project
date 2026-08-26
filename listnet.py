@@ -541,7 +541,15 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     print("Test NDCG: ", test_ndcg)
 
 
+    plt.plot(range(epochs),val_losses)
+    plt.xlabel("Epochs")
+    plt.ylabel("Val losses")
+    plt.show()
+
+
     plt.plot(range(epochs),val_NDCG_tracking)
+    plt.xlabel("Epochs")
+    plt.ylabel("NDCG score")
     plt.show()
 
     
