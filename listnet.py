@@ -448,7 +448,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
 
                 best_epoch = i
 
-                torch.save(model.state_dict(),"model-weights.pth")
+                torch.save(model.state_dict(),"weights.pth")
 
 
 
@@ -461,7 +461,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     test_model = ListNet(len(training_input[0][0][0]),5,5,1)
 
     #Load in model weights that were saved prior
-    test_model.load_state_dict(torch.load("model-weights.pth"))
+    test_model.load_state_dict(torch.load("weights.pth"))
 
     
     #Track ndcg for all queries to get average at end
