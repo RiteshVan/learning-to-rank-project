@@ -729,7 +729,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
                 best_epoch = i
 
-                torch.save(model.state_dict(),"model-weights.pth")
+                torch.save(model.state_dict(),"weights.pth")
 
 
 
@@ -737,7 +737,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
     test_model = ListNet(len(training_input[0][0][0]),5,5,1)
 
 
-    test_model.load_state_dict(torch.load("model-weights.pth"))
+    test_model.load_state_dict(torch.load("weights.pth"))
 
 
     
