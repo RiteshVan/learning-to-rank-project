@@ -190,11 +190,14 @@ def get_data(fold : int,doc_count : int = 0):
 
     test_dict = get_dict(test_dataset_name)
 
-
+    #Used to check if data loaded in properly when filtering queries
     network_input_len = len(training_input) + len(validation_input) + len(get_network_input(test_dataset_name))
-    
-    print("Dict size: ",len(val_dict.keys()) + len(test_dict.keys()) + len(get_dict(train_dataset_name).keys()) )
-    return training_input,validation_input,val_dict,test_dict,network_input_len
+
+
+    #Get train dict to find average number of docs per query
+    train_dict = get_dict(train_dataset_name)
+   
+    return training_input,validation_input,val_dict,test_dict,network_input_len,train_dict
 
 
 
@@ -539,19 +542,6 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
     print("Best Validation NDCG: ", max_ndcg_val)
     print("Best epoch: ", best_epoch)
     print("Test NDCG: ", test_ndcg)
-
-
-    plt.plot(range(epochs),val_losses)
-    plt.xlabel("Epochs")
-    plt.ylabel("Val losses")
-    plt.show()
-
-
-    plt.plot(range(epochs),val_NDCG_tracking)
-    plt.xlabel("Epochs")
-    plt.ylabel("NDCG score")
-    plt.show()
-
     
 
     return max_ndcg_val,best_epoch,test_ndcg
@@ -793,10 +783,21 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
         print("Test MRR: ", test_mrr)
 
         return max_mrr_val, best_epoch, test_mrr
-    
 
 
-data = get_data(1)
+
+val_data = get_data(1)[2]
+test_data = get_data(1)[3]
+train_data = get_data(1)[5]
+
+all_dicts = [val_data,test_data,train_data]
+
+zero_labels = 0
 
 
-run_ndcg(data[0],data[1],data[2],data[3],10)
+for dict in all_dicts:
+    for query in dict.keys():
+        for item in dict[query]:
+            if item[1] ==0:
+                zero_labels += 1
+
