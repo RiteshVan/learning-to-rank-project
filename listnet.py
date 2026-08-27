@@ -792,12 +792,18 @@ train_data = get_data(1)[5]
 
 all_dicts = [val_data,test_data,train_data]
 
-zero_labels = 0
+non_zero_docs_per_query = []
 
 
 for dict in all_dicts:
+    
     for query in dict.keys():
-        for item in dict[query]:
-            if item[1] ==0:
-                zero_labels += 1
+        query_count = 0
+        for doc in dict[query]:
+            if doc[1] !=0:
+                query_count += 1
 
+        non_zero_docs_per_query.append(query_count)
+
+print(sum(non_zero_docs_per_query)/len(non_zero_docs_per_query))
+    
