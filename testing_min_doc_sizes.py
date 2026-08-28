@@ -1,4 +1,4 @@
-from listnet import get_data, run_mrr,run_ndcg
+from listnet import get_data,run_ndcg
 import numpy as np
 
 fold_1_data = get_data(1,10)
