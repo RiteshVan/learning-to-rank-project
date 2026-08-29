@@ -159,7 +159,7 @@ print()
 #The following code was created in order to create graohs to analyse the algorithm
 
 #Test algorithm with many thresholds to check number of iterations
-test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
+# test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
 
 
 # #arrays to keep track of values to plot
@@ -216,21 +216,21 @@ test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000
 
 #Experiment to find total and average distance from NetworkX results
 
-pagerank_results= list(map(lambda x : x[1] ,sorted(pagerank(g,100,0.85,0.00001)[1],key= lambda x : x[0])))
+# pagerank_results= list(map(lambda x : x[1] ,sorted(pagerank(g,100,0.85,0.00001)[1],key= lambda x : x[0])))
 
-networkx_results= list(map(lambda x : x[1] ,sorted(list(nx.pagerank(g,tol=0.00001,max_iter=100).items()),key= lambda x : x[0])))
+# networkx_results= list(map(lambda x : x[1] ,sorted(list(nx.pagerank(g,tol=0.00001,max_iter=100).items()),key= lambda x : x[0])))
 
-total_diff = np.absolute(np.array(pagerank_results)-np.array(networkx_results))
+# total_diff = np.absolute(np.array(pagerank_results)-np.array(networkx_results))
 
-print(total_diff[:10])
-print("Sum of differences: ",sum(total_diff))
+# print(total_diff[:10])
+# print("Sum of differences: ",sum(total_diff))
 
-print("AVG difference per node: ",sum(total_diff)/ len(pagerank_results))
+# print("AVG difference per node: ",sum(total_diff)/ len(pagerank_results))
 
 
 
-plt.plot(range(len(pagerank_results)),total_diff)
-plt.ylabel("Difference between algorithms for each node")
-plt.xlabel("Node ID")
+# plt.plot(range(len(pagerank_results)),total_diff)
+# plt.ylabel("Difference between algorithms for each node")
+# plt.xlabel("Node ID")
 
-plt.show()
+# plt.show()
