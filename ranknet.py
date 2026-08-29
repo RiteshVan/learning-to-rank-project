@@ -301,7 +301,7 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
-
+        #Remove queries with less than specified number of docs
         if doc_count > 0:
             for query in dictionary_query_docs.copy():
                 if len(dictionary_query_docs[query]) <= doc_count:
