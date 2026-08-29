@@ -874,8 +874,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     print("Test NDCG: ", test_ndcg)
 
 
-    # plt.plot(range(epochs),avg_nDCG_vals)
-    # plt.show()
+    
     
     return max_ndcg_val, best_epoch, test_ndcg, occurrences_one_above_two
 
