@@ -5,7 +5,7 @@ import re
 import time
 import os
 
-#Initialise directed graph to visualise connections for PageRank
+#Initialise directed graph to create connections for PageRank
 g = nx.DiGraph()
 
 #Create connections between nodes
