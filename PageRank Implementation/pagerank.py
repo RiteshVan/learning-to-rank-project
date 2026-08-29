@@ -66,7 +66,7 @@ def pagerank(graph : nx.classes.digraph.DiGraph ,iter : int,damping : float,conv
 
     #Create matrixes for algorithm
 
-    #Transpose such that (x,y) entry shows if x -> y is connected
+    #Transpose for next calculations
     adj_matrix = np.array(nx.adjacency_matrix(graph,dtype=float).toarray()).transpose()
 
 
