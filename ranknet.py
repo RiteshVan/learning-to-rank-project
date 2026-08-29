@@ -1199,11 +1199,3 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
-
-
-
-
-# data = get_data_without_equal_pairs(1)
-
-
-# run_ndcg(data[0],data[1],data[2],data[3],10)
