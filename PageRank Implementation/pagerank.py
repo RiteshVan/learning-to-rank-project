@@ -144,7 +144,7 @@ print()
 #Print results for built-in function
 #Built-in function also sets damping = 0.85
 print("Compared to networkx built-in function: " )
-print(sorted(list(nx.pagerank(g).items())[:20], key = lambda x : x[1],reverse=True  ))
+print(sorted(list(nx.pagerank(g,tol=0.00001,max_iter=100).items())[:20], key = lambda x : x[1],reverse=True  ))
 
 
 
