@@ -59,7 +59,7 @@ def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
                 queries.append(re.search(r"qid:([0-9]+)",val).group(1))
 
                 #Find all features in entry and only extracts numerical terms that refer to feature values
-                feature_vals  =re.findall(r"[0-9]+:([^ ]*)" , val) 
+                feature_vals  = re.findall(r"[0-9]+:([^ ]*)" , val) 
 
                 #Convert all data extracted here to floats for future operations
                 features.append(list( map(float,feature_vals)))
