@@ -155,15 +155,15 @@ print()
 
 
 #Experiment(s)
-
+#The following code was created in order to create graohs to analyse the algorithm
 
 #Test algorithm with many thresholds to check number of iterations
 # test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
 
 
 # #arrays to keep track of values to plot
-# plot_x=[] #Stores convergence thresholds
-# plot_y=[]  #Stores iterations taken at each threshold
+# plot_x = [] #Stores convergence thresholds
+# plot_y = []  #Stores iterations taken at each threshold
 
 
 # #Iterate through selected thresholds (from prior array) and run pagerank at each threshold (keeping damping the same throughout for fair testing)
