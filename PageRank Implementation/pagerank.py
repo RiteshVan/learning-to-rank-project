@@ -184,9 +184,7 @@ print()
 
 
 
-#Visualise graph in circular way for clarity
-#nx.draw_circular(g,with_labels=True)
-#plt.show()
+
 
 
 
