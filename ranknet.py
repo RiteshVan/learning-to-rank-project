@@ -23,7 +23,7 @@ def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
     test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
-    #In particular created to help with calculating nDCG and MRR during validation
+    #In particular created to help with calculating nDCG and MRR
     #Adapted from get_pairs_tensors() function
     def get_dict(dataset_name : str):
         #To store data entries (which consist of relevancy labels, query IDs and features)
@@ -151,15 +151,18 @@ def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+
+        #Used as part of experiment to remove queries that have 
+        #less than specified number of docs
         if doc_count > 0:
             for query in dictionary_query_docs.copy():
                 if len(dictionary_query_docs[query]) <= doc_count:
                     del dictionary_query_docs[query]
 
         #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
-        pairs=[]
+        pairs = []
 
-        target=[]
+        target = []
 
         #Iterate through per query at a time to ensure any 2 documents in a pair are related to the same query
         for qid,docs in dictionary_query_docs.items():
@@ -242,14 +245,14 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
     test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
-    # #In particular created to help with calculating nDCG during validation
-    # #Adapted from get_pairs_tensors() function
+    #In particular created to help with calculating nDCG and MRR
+    #Adapted from get_pairs_tensors() function
     def get_dict(dataset_name : str):
         #To store data entries (which consist of query IDs, features and relevancy labels)
         array = []
 
 
-    #Open file and iterate through and add to array
+        #Open file and iterate through and add to array
         with open(dataset_name, "r") as f:
 
             for line in f:
