@@ -82,7 +82,8 @@ def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
                 dictionary_query_docs[qid].append((f,label))
 
 
-
+        #Used to remove queries from dictionary that have less than specied number of documents
+        #Used for an experiment
         if doc_count > 0:
             for query in dictionary_query_docs.copy():
                 if len(dictionary_query_docs[query]) <= doc_count:
