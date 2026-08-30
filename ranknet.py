@@ -23,7 +23,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
     test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
-    #In particular created to help with calculating nDCG and MRR
+    #In particular created to help with calculating NDCG and MRR
     #Adapted from get_pairs_tensors() function
     def get_dict(dataset_name : str):
         #To store data entries (which consist of relevancy labels, query IDs and features)
@@ -65,7 +65,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
                 features.append(list( map(float,feature_vals)))
 
 
-        #Create dictionary where keys are query IDs and key values is 
+        #Create dictionary where keys are query IDs and values are
         #lists of tuples where each tuple contains a linked document's features and its relevancy to query
         dictionary_query_docs = {}
 
@@ -101,7 +101,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
 
     #Function to get pairs
     def get_pairs_tensors(dataset_name : str):
-        #To store data entries (which consist of query IDs, features and relevancy labels)
+        #To store data entries which consist of query IDs, features and relevancy labels
         array=[]
 
 
@@ -188,7 +188,6 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
 
 
         #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
-        #Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
         features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
@@ -412,7 +411,6 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
 
 
         #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
-        #Tensors are also useful as they automatically manage own memory for gradients (useful for optimiser steps)
         features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
