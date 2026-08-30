@@ -210,10 +210,10 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
 
     test_dict= get_dict(test_dataset_name)
 
-    train_dict = get_dict(dataset_name)
+    
 
-    #Return data so can be passed to run() function
-    return training_pairs, val_pairs, val_dict, test_dict,train_dict
+    #Return data so can be passed to run_ndcg() and run_mrr() functions
+    return training_pairs, val_pairs, val_dict, test_dict
 
 
 
@@ -434,12 +434,11 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
     test_dict= get_dict(test_dataset_name)
 
 
-    train_dict = get_dict(dataset_name)
-
+    
     
 
-    #Return data so can be passed to run() function
-    return training_pairs, val_pairs, val_dict, test_dict, train_dict
+    #Return data so can be passed to run_ndcg() and run_mrr() functions
+    return training_pairs, val_pairs, val_dict, test_dict
 
 
 
