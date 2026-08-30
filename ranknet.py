@@ -8,9 +8,9 @@ import os
 
 
 #Function to obtain data with no pairs that have equal relevancy labels
-def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
+def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
     #MQ2008 Dataset from LETOR 4.0
-    #Path to dataset being used
+    #Path to train dataset being used
     dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
@@ -232,7 +232,7 @@ def get_data_without_equal_pairs(fold : int,doc_count : int = 0):
 #Function to obtain data with pairs that have equal relevancy labels
 def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
     #MQ2008 Dataset from LETOR 4.0
-    #Path to dataset being used
+    #Path to train dataset being used
     dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold)  + "/train.txt"
 
 
