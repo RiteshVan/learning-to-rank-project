@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import os
-
+import time
 
 #Function to obtain data with no pairs that have equal relevancy labels
 def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
@@ -1188,3 +1188,22 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
+
+
+
+
+#calc avg time taken to load in data
+
+times = []
+
+
+for _ in range(10):
+    start_time = time.time()
+    fold_1 = get_data_with_equal_pairs(1)
+    fold_2 = get_data_with_equal_pairs(2)
+    fold_3 = get_data_with_equal_pairs(3)
+    fold_4 = get_data_with_equal_pairs(4)
+    fold_5 = get_data_with_equal_pairs(5)
+    times.append(time.time() - start_time)
+
+print("AVG time taken to load in data: ", sum(times)/len(times))
