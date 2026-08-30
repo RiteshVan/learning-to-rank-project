@@ -157,7 +157,7 @@ print()
 
 
 #Experiment(s)
-#The following code was created in order to create graohs to analyse the algorithm
+#The following code was created in order to create graphs to analyse the algorithm
 
 #Test algorithm with many thresholds to check number of iterations
 # test_convergence_vals =[0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.00000001,0.000000001]
