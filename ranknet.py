@@ -471,8 +471,8 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
         def __init__(self,input_features,hl1,hl2,out):
             super().__init__()
             self.fc1 = nn.Linear(input_features,hl1)
-            self.fc2= nn.Linear(hl1,hl2)
-            self.out= nn.Linear(hl2,out)
+            self.fc2 = nn.Linear(hl1,hl2)
+            self.out = nn.Linear(hl2,out)
 
 
         #Forward pass to compute output from the input
