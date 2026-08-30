@@ -488,29 +488,19 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     data = training_pairs_data
 
 
-
-    
-
-
-
     #Pairs extracted and stored separately
     features_1 = data[0]
     features_2 = data[1]
 
+
     #Target values stored
-    target= data[2]
-
-
-
+    target = data[2]
     
 
 
 
     #Stores all validation data to one variable
     val_set = val_pairs_data
-
-
-    
 
 
 
@@ -520,7 +510,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
     #Target values stored
-    val_target=val_set[2]
+    val_target = val_set[2]
 
 
 
@@ -824,7 +814,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 for i in range(len(pred_order)):
                     for j in range(i,len(pred_order)):
                         #If found that label 1 above label 2, increment variable and break
-                        if (pred_order[i][1] ==1) and (pred_order[j][1] ==2):
+                        if (pred_order[i][1] == 1) and (pred_order[j][1] == 2):
                             occurrences_one_above_two += 1
                             
                             
@@ -837,7 +827,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
             #Calculations here done with similar operations to those in validation step
             iDCG = 0
 
-            denominator_val=2
+            denominator_val = 2
             for val in actual_order:
                 calc = ((2**val)-1)/math.log2(denominator_val)
 
@@ -910,7 +900,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     features_2 = data[1]
 
     #Target values stored
-    target= data[2]
+    target = data[2]
 
 
     #Stores all validation data to one variable
@@ -971,7 +961,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
     #To track how MRR values change over time
-    avg_mrr_values=[]
+    avg_mrr_values = []
 
     #Train loop
     for i in range(epochs):
@@ -1043,7 +1033,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 actual_rank_order = []
 
                 #Store tuple 
-                #FORMAT:(actual_label,predicted_label)  
+                #FORMAT:(actual_label,predicted_score)  
                 #Later ordered based on scores given
                 predicted_rank_order=[]
 
