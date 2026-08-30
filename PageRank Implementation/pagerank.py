@@ -11,7 +11,8 @@ g = nx.DiGraph()
 #Create connections between nodes
 
 #Used during initial testing, switched to use real dataset
-#Small graph to showcase how PageRank works
+#Example small graph to showcase how PageRank works
+
 
 # g.add_edge(0,1)
 # g.add_edge(1,1)
