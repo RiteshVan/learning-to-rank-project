@@ -414,7 +414,7 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
         features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
-        # print(target)
+
         #Targets are equal to one as the more relevant doc is one the left side, so target is one
         target = torch.tensor(target,dtype=torch.float32)
 
