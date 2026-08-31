@@ -244,7 +244,7 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
     test_dataset_name = os.getcwd() + "/MQ2008/Fold"+ str(fold) + "/test.txt"
 
     #Function to get dictionary to iterate through specific docs from each query
-    #In particular created to help with calculating nDCG and MRR
+    #In particular created to help with calculating NDCG and MRR
     #Adapted from get_pairs_tensors() function
     def get_dict(dataset_name : str):
         #To store data entries (which consist of query IDs, features and relevancy labels)
@@ -281,14 +281,14 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
                 queries.append(re.search(r"qid:([0-9]+)",val).group(1))
 
                 #Find all features in entry and only extracts numerical terms that refer to feature values
-                feature_vals=re.findall(r"[0-9]+:([^ ]*)" , val) 
+                feature_vals = re.findall(r"[0-9]+:([^ ]*)" , val) 
 
                 #Convert all data extracted here to floats for future operations
                 features.append(list( map(float,feature_vals)))
 
 
         #Create dictionary where keys are query IDs and value per key is 
-        # list of tuples where each tuple contains a linked document's features and its relevancy to query
+        #list of tuples where each tuple contains a linked document's features and its relevancy to query
         dictionary_query_docs = {}
 
 
@@ -336,7 +336,7 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
 
 
         #Arrays to store required information about query-doc pairs
-        relevancy_labels = []
+        relevancy_labels = [] #Stores document relevancy labels
         queries = [] #Query IDs stored
         features = [] #Array of arrays, with each entry representing a document
 
@@ -358,7 +358,8 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
                 features.append(list( map(float,feature_vals)))
 
 
-        #Create dictionary where keys are query IDs and value per key is list of tuples where each tuple contains a linked document's features and its relevancy to query
+        #Create dictionary where keys are query IDs and value per key is 
+        #list of tuples where each tuple contains a linked document's features and its relevancy to query
         dictionary_query_docs = {}
 
 
@@ -373,12 +374,14 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
             else:
                 dictionary_query_docs[qid].append((f,label))
 
+        #Remove queries from dictionary if they have less documents than specified
+        #Used for an experiment
         if doc_count > 0:
             for query in dictionary_query_docs.copy():
                 if len(dictionary_query_docs[query]) <= doc_count:
                     del dictionary_query_docs[query]
 
-        #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
+        #Create array to store document pairs, where leftmost entry is more relevant to a query that one on the right
         pairs=[]
 
         target=[]
@@ -415,7 +418,7 @@ def get_data_with_equal_pairs(fold : int,doc_count : int = 0):
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
 
-        #Targets are equal to one as the more relevant doc is one the left side, so target is one
+        #Targets stored
         target = torch.tensor(target,dtype=torch.float32)
 
 
@@ -516,7 +519,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
 
-    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
+    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in hidden layers and one output
     model = RankNet(len(features_1[0]),5,5,1)
 
     #Defines loss function used for the model
@@ -528,10 +531,10 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     #How many times to run loop
     epochs = 100
 
-    #Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
+    #Keeps track of loss function outputs to see how it changes over a number of iterations
     losses = []
 
-    #Keep track ofloss on validation set
+    #Keep track of loss on validation set
     val_losses = []
 
 
@@ -540,7 +543,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     val_dict = val_dict_data
 
 
-    #Keep track of nDCG values over the course of execution
+    #Keep track of NDCG values over the course of execution
     avg_nDCG_vals = []
 
 
@@ -549,8 +552,8 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
 
-    #Used in order to save the model that gives the best nDCG score
-    #Set to negative one as the nDCG values will always be above this
+    #Used in order to save the model that gives the best NDCG score
+    #Set to negative one as the NDCG values will always be above this
     max_ndcg_val = -1
 
 
@@ -571,7 +574,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
         output_1 = model.forward(features_1)
         output_2 = model.forward(features_2)
 
-        #Calculates difference  and its sigmoid value befor inputting into loss function
+        #Calculates difference  and its sigmoid value before inputting into loss function
         diff = output_1 - output_2 
         diff = torch.sigmoid(diff)
 
@@ -655,12 +658,12 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                     predicted_rank_order.append((item[1],float(predicted_score)))
 
 
-                #Sort labels in order to find ideal-DCG
+                #Sort labels in order to find IDCG
                 #Only take top k values for NCDG calculation
                 actual_rank_order = sorted(actual_rank_order,reverse=True)[:ndcg_k]
 
 
-                #Order based predicted score
+                #Order based on predicted score
                 #Only take top k values for NCDG calculation
                 predicted_rank_order = sorted(predicted_rank_order,reverse=True,key = lambda x : x[1])[:ndcg_k]
 
@@ -672,7 +675,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
                 dcg = 0
 
 
-                #Log calculations start at log2(2) then rise iteratively do set variable to 2
+                #Log calculations start at log2(2) then rise iteratively so set variable to 2
                 denominator_val = 2
 
                 #Iterate through actual order vals to find iDCG value
@@ -707,13 +710,13 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
                 #Checks in case query has no relevant docs connected to it
                 if iDCG != 0 :
-                    #Calculation to find nDCG and add to array
+                    #Calculation to find NDCG and add to array
                     nDCG = dcg / iDCG
 
                     nDCG_per_query.append(nDCG)
 
 
-            #Append to array overall nDCG val for this iteration
+            #Append to array overall NDCG val for this iteration
             nDCG_overall = sum(nDCG_per_query) / len(nDCG_per_query)
             avg_nDCG_vals.append(nDCG_overall)
 
@@ -759,7 +762,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
     test_dict = test_dict_data
 
 
-    #This stores the nDCG values of all queries
+    #This stores the NDCG values of all queries
     overall_nDCG_to_calc = []
 
 
@@ -808,7 +811,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
             pred_order = sorted(pred_order, reverse=True, key= lambda x : x[0])[:ndcg_k]
 
 
-            #Checks of docs of relevancy 1 and 2 associated to a query
+            #Checks if docs of relevancy 1 and 2 associated to a query
             if (1 in actual_order) and (2 in actual_order):
                 #Iterates through labels in predicted ordering
                 for i in range(len(pred_order)):
@@ -862,7 +865,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
 
     
-    
+    #Return information required
     return max_ndcg_val, best_epoch, test_ndcg, occurrences_one_above_two
 
 
@@ -921,7 +924,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
 
 
-    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in middle layer and one output
+    #Initialise model by specifying input size (equal to number of features per doc), number of neurons in hidden layers and one output
     model = RankNet(len(features_1[0]), 5, 5, 1)
 
     #Defines loss function used for the model
@@ -933,10 +936,10 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
     #How many times to run loop
     epochs = 100
 
-    #Keeps track of loss function outputs to see how if changes over a number of iterations (to plot graph later)
+    #Keeps track of loss function outputs to see how it changes over a number of iterations 
     losses = []
 
-    #Keep track ofloss on validation set
+    #Keep track of loss on validation set
     val_losses = []
 
 
@@ -972,7 +975,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
         output_1 = model.forward(features_1)
         output_2 = model.forward(features_2)
 
-        #Calculates difference  and its sigmoid value befor inputting into loss function
+        #Calculates difference  and its sigmoid value before inputting into loss function
         diff = output_1 - output_2 
         diff = torch.sigmoid(diff)
 
@@ -1071,7 +1074,7 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
                 #Iterate through the ordering from predicted scores
                 for l in range(len(predicted_rank_order)):
 
-                    #Checks if item at index i is the most relevant doc to a query and if relevancy label is not zero 
+                    #Checks if item at index l is the most relevant doc to a query and if relevancy label is not zero 
                     if (predicted_rank_order[l][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
 
                         #Note position (add one as to get actual position not index)
