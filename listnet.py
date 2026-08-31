@@ -90,6 +90,9 @@ def get_data(fold : int,doc_count : int = 0):
             query_docs=[]
             query_targets=[]
 
+
+            #Used as part of an experiment to only consider queries that have 
+            #above a specified number of documents associated to them
             if len(dictionary_query_docs[query]) > doc_count:
 
                 #Iterate through document and label in query list 
