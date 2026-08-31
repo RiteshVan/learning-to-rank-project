@@ -192,7 +192,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
         
-        #Targets are equal to one as the more relevant doc is one the left side, so target is one
+        #Targets are equal to one as the more relevant doc is on the left side
         target = torch.tensor(target,dtype=torch.float32)
 
         
