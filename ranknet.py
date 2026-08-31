@@ -175,7 +175,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
                         pairs.append((docs[i][0], docs[j][0]))
                         target.append([1])
 
-                    #Condition checks and ensure less relevant document placed second in tuple
+                    #Condition checks and ensures less relevant document placed second in tuple
                     elif docs[i][1] < docs[j][1]:
                         pairs.append((docs[j][0], docs[i][0]))
                         target.append([1])
