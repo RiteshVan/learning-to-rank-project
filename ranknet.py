@@ -159,7 +159,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
                 if len(dictionary_query_docs[query]) <= doc_count:
                     del dictionary_query_docs[query]
 
-        #Create array to store document pairs, where leftmost entry is more relevant to a document that one on the right
+        #Create array to store document pairs, where leftmost entry is more relevant to a query than one on the right
         pairs = []
 
         target = []
