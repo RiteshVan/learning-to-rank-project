@@ -777,8 +777,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
                 overall_mrr_to_calc.append(1/top_label_position)
 
 
-        #For this test dataset there is at least one query with at least one document allocated to it 
-        #so no need to check if denominator is zero
+        
         test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
 
         print("Test MRR: ", test_mrr)
