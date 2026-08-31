@@ -187,7 +187,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
            
 
 
-        #Convert pairs into 2 separate arrays to keep more relevant and less relevant queries separate
+        #Convert pairs into 2 separate arrays to keep more relevant and less relevant documents separate
         features_1 = torch.tensor([v[0] for v in pairs],dtype=torch.float32)
         features_2 = torch.tensor([v[1] for v in pairs],dtype=torch.float32)
 
