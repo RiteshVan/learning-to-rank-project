@@ -82,7 +82,7 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
                 dictionary_query_docs[qid].append((f,label))
 
 
-        #Used to remove queries from dictionary that have less than specied number of documents
+        #Used to remove queries from dictionary that have less than specified number of documents
         #Used for an experiment
         if doc_count > 0:
             for query in dictionary_query_docs.copy():
@@ -136,7 +136,8 @@ def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
                 features.append(list( map(float,feature_vals)))
 
 
-        #Create dictionary where keys are query IDs and value per key is list of tuples where each tuple contains a linked document's features and its relevancy to query
+        #Create dictionary where keys are query IDs and value per key is list of tuples where 
+        #each tuple contains a linked document's features and its relevancy to query
         dictionary_query_docs = {}
 
 
@@ -749,7 +750,7 @@ def run_ndcg(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data,ndc
 
     #Testing phase
 
-    #Load in the stored model that gave the best nDCG score during validation
+    #Load in the stored model that gave the best NDCG score during validation
 
     #Keep same characteristics as model used for training (same layers, neurons)
     test_model = RankNet(len(features_1[0]), 5, 5, 1)
@@ -1191,6 +1192,3 @@ def run_mrr(training_pairs_data,val_pairs_data,val_dict_data,test_dict_data):
 
     #Function returns values so that they can be used to compute averages
     return max_mrr_val, best_epoch, test_mrr
-
-
-
