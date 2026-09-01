@@ -175,6 +175,8 @@ def get_data(fold : int,doc_count : int = 0):
                 dictionary_query_docs[qid].append((f,label))
 
 
+        #Used as part of experiment to remove queries with 
+        #less than specified number of doc from dictionary
         for query in dictionary_query_docs.copy().keys():
             if len(dictionary_query_docs[query]) <= doc_count:
                 del dictionary_query_docs[query]
