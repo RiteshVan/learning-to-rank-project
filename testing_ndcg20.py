@@ -2,6 +2,9 @@ from ranknet import get_data_without_equal_pairs,get_data_with_equal_pairs,run_n
 import numpy as np
 
 
+#For this file the testing operations are similar to those from testing.py
+#Key difference is that process is only carried out at NDCG@20 for queries with above 10 documents associated to them
+
 
 
 #Get all data for folds without equal pairs 
@@ -13,7 +16,7 @@ folds_5_data = get_data_without_equal_pairs(5,10)
 folds_without_equal_pairs = [folds_1_data,folds_2_data,folds_3_data,folds_4_data,folds_5_data]
 
 
-
+#Get all data for folds with equal pairs 
 folds_1_data = get_data_with_equal_pairs(1,10)
 folds_2_data = get_data_with_equal_pairs(2,10)
 folds_3_data = get_data_with_equal_pairs(3,10)
