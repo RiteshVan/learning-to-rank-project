@@ -616,54 +616,70 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
         for j in range(len(training_input)):
             model.train()
 
+
+            #Get documents and targets related to query
             documents = training_input[j][0]
 
             targets = training_input[j][1]
 
 
+            #Get scores for documents and store in one dimension tensor
             scores = model.forward(documents)
 
             scores = torch.flatten(scores)
 
+
+            #Apply softmax to scores and targets to get top-1 probabilities
             scores = torch.softmax(scores,-1)
 
             targets = torch.softmax(targets,-1)
 
 
-
+            #Input scores and targets to get loss output
             loss = -torch.sum(targets * torch.log2(scores))
 
 
+            #Track loss
             train_loss_avg.append(loss.detach().numpy())
 
+            #Compute gradients
             loss.backward()
 
+
+            #Adjust parameters
             optimiser.step()
 
-
+            #Prepare for next epoch
             optimiser.zero_grad()
 
         train_losses.append(sum(train_loss_avg)/len(train_loss_avg))
 
 
+        #Array to track validation losses
         val_loss_avg=[]
         with torch.no_grad():
             model.eval()
             for k in range(len(validation_input)):
-
+                #Get documents and labels related to query
                 documents = validation_input[k][0]
 
                 targets = validation_input[k][1]
 
+
+                #Get scores for documents and store then in one dimensional array
                 scores = model.forward(documents)
 
                 scores = torch.flatten(scores)
 
+
+                #Apply softmax to get top-1 probabilities
                 scores=torch.softmax(scores,-1)
 
 
                 targets = torch.softmax(targets,-1)
 
+
+                #Calculate validation loss
                 val_loss =  -torch.sum(targets * torch.log2(scores))
 
                 val_loss_avg.append(val_loss.detach().numpy())
