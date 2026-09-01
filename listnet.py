@@ -1,17 +1,15 @@
 import torch
 import torch.nn as nn
 import re
-import matplotlib.pyplot as plt
-import numpy as np
 import math
 import os
-import time
+
 
 #Function used to obtain all data needed for ListNet algorithm
 #Contains subfunctions so that data for neural network and metrics can be obtained in one step
 def get_data(fold : int,doc_count : int = 0):
 
-    #Uses current directory string to get datasets
+    #Uses current directory string to get data
     #Path to training dataset
     train_dataset_name = os.getcwd() + "/MQ2008/Fold" +  str(fold) + "/train.txt"
 
@@ -88,7 +86,7 @@ def get_data(fold : int,doc_count : int = 0):
 
             #Arrays to store values on per query basis
             query_docs=[]
-            query_targets=[]
+            query_labels=[]
 
 
             #Used as part of an experiment to only consider queries that have 
@@ -96,19 +94,19 @@ def get_data(fold : int,doc_count : int = 0):
             if len(dictionary_query_docs[query]) > doc_count:
 
                 #Iterate through document and label in query list 
-                for document,target in dictionary_query_docs[query]:
+                for document,label in dictionary_query_docs[query]:
                     #Add required values to arrays
                     query_docs.append(document)
-                    query_targets.append(target)
+                    query_labels.append(label)
 
                 #Convert to tensors
                 query_docs = torch.tensor(query_docs,dtype=torch.float32)
 
-                query_targets = torch.tensor(query_targets,dtype=torch.float32)
+                query_labels = torch.tensor(query_labels,dtype=torch.float32)
 
 
                 #Each tuple appended related to all information for one query
-                network_input.append((query_docs,query_targets))
+                network_input.append((query_docs,query_labels))
 
         #Return network input
         return network_input
@@ -339,7 +337,7 @@ def run_ndcg(training_input,validation_input,val_dict,test_dict,ndcg_k):
                 targets = validation_input[k][1]
 
 
-                #Get model scored for documents
+                #Get model scores for documents
                 scores = model.forward(documents)
 
 
@@ -594,21 +592,25 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
     optimiser = torch.optim.Adam(model.parameters(),lr=0.01)
 
+    #Set number of times to run loop
     epochs = 100
 
 
+    #Arrays to keep track of losses
     train_losses=[]
 
     val_losses=[]
 
-
+    #Variable to keep track of best MRR value obtained
     max_mrr_val = -1
 
-
+    #To track epoch at which best value was obtained
     best_epoch = -1
 
+    #Track how MRR changes over the course of loop
     avg_mrr_values = []
 
+    #Operations here are same as in run_ndcg() function 
     for i in range(epochs):
         train_loss_avg=[]
         for j in range(len(training_input)):
@@ -669,57 +671,66 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
             val_losses.append(sum(val_loss_avg)/len(val_loss_avg)) 
 
 
+            
             mrr_per_query = []
 
+            #Iterates through queries in dictionary
             for query in val_dict.keys():
 
-
+                #Arrays here used to track real order and order from model
                 actual_rank_order = []         
 
 
                 predicted_rank_order = []         
 
 
-
+                #Iterate through docs per array
                 for item in val_dict[query]:
 
-
+                    #Append relevancy label
                     actual_rank_order.append(item[1])
 
 
+                    #Calculate model prediction and append tuple (real_label,predicted_score) to array
                     predicted_score = model.forward(torch.tensor(item[0],dtype = torch.float32))
 
                     predicted_rank_order.append((item[1],predicted_score))
 
 
 
-
+                #Array ordered
                 actual_rank_order = sorted(actual_rank_order,reverse = True)
 
-
+                #Array ordered based on model score
                 predicted_rank_order = sorted(predicted_rank_order,reverse = True, key = lambda x : x[1])
 
 
-
+                #To track position of where most relevant doc is placed
                 top_label_position = -1
 
 
-
+                #Iterate through ordering
                 for l in range(len(predicted_rank_order)):
+
+                    #If value at index l is highest label then note its position
                     if (predicted_rank_order[l][0] == actual_rank_order[0]) and (actual_rank_order[0] != 0):
                         top_label_position = l + 1
 
                         break
 
-
+                #Do not add to calculation if query does not have any relevant docs
                 if (actual_rank_order[0] != 0) and (top_label_position > 0):
                     mrr_per_query.append(1/top_label_position)
 
-
+            #Calculate overall average MRR for given epoch
             avg_epoch_mrr = sum(mrr_per_query)/len(mrr_per_query)
 
+
+            #Add to list to track MRR values over time
             avg_mrr_values.append(avg_epoch_mrr)
 
+
+            #If newly calculated MRR is highest seen so far update max_mrr_val and store model weights and epoch when they were found
             if avg_epoch_mrr > max_mrr_val:
                 max_mrr_val = avg_epoch_mrr
 
@@ -729,16 +740,16 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
 
 
 
-
+    #Create model with same structure as prior model
     test_model = ListNet(len(training_input[0][0][0]),5,5,1)
 
-
+    #Load best model weights
     test_model.load_state_dict(torch.load("weights.pth"))
 
 
     
 
-
+    #Array used to find overall test MRR
     overall_mrr_to_calc = []
 
 
@@ -746,6 +757,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
     with torch.no_grad():
         test_model.eval()
 
+        #Similar process to that in validation section
         for query in test_dict.keys():
 
             actual_rank_order = []
@@ -782,7 +794,7 @@ def run_mrr(training_input,validation_input,val_dict,test_dict):
                 overall_mrr_to_calc.append(1/top_label_position)
 
 
-        
+        #Calculate and print test MRR
         test_mrr = sum(overall_mrr_to_calc)/len(overall_mrr_to_calc)
 
         print("Test MRR: ", test_mrr)
