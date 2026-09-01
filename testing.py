@@ -3,6 +3,8 @@ import time
 import numpy as np
 
 
+#Similar to testing file used in RankNet implementation
+
 time_results = open("times_taken.txt","w")
 
 execution_start_time = time.time()
