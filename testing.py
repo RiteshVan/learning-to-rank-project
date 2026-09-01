@@ -201,7 +201,7 @@ results_file.close()
 
 
 
-#Create file to sor MRR rseults for input that does not contain document pairs with equal relevancy labels
+#Create file for MRR results for input that does not contain document pairs with equal relevancy labels
 results_file = open("results_ranknet_MRR_without_equal_pairs.txt" , "w")
 results_file.write("RESULTS:\n")
 results_file.write("\n")
@@ -210,7 +210,7 @@ results_file.write("\n")
 
 
 
-#Used to calculated averages across folds
+#Used to calculate averages across folds
 fold_avg_vali_mrr = []
 fold_avg_epoch = []
 fold_avg_test_mrr = []
@@ -232,7 +232,7 @@ for i in range(len(folds_data_without_equal_pairs)):
         test_mrr_avg.append(values[2])
 
 
-    #Calculate average values obtained for current folds 
+    #Calculate average values obtained for current fold
     #and add to arrays to a later find averages across folds
     fold_avg_vali_mrr.append(sum(vali_mrr_avg)/len(vali_mrr_avg))
 
