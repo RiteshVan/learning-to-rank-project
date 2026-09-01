@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import os
-import time
+
 
 #Function to obtain data with no pairs that have equal relevancy labels
 def get_data_without_equal_pairs(fold : int, doc_count : int = 0):
