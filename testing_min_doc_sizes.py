@@ -1,6 +1,11 @@
 from listnet import get_data,run_ndcg
 import numpy as np
 
+
+#Similar file also in RankNet implementation
+#Used to get results at NDCG@20 for queries with above 10 documents associated to them
+
+
 fold_1_data = get_data(1,10)
 fold_2_data = get_data(2,10)
 fold_3_data = get_data(3,10)
