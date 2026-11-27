@@ -1,1 +1,1 @@
-Repository to store project code, maintain updates and make diary entries.
+Repository to store project code, maintain updates.
